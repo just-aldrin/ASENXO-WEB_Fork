@@ -216,6 +216,7 @@ body {
     color: var(--bg-card);
     padding: 1rem;
     border: none;
+    margin-top: 10px;
     border-radius: 15px;
     width: 100%;
     font-weight: 600;
