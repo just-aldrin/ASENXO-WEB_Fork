@@ -370,7 +370,7 @@
                     if (error) throw error;
 
                         pendingEmail = email;
-                        const otp = generateOtp();
+                        const otp = generatedOtp();
 
                         const response = await fetch('./send-otp.php', {
                             method: 'POST',
