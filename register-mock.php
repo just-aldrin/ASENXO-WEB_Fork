@@ -362,9 +362,10 @@
                         password,
                         options: { 
                             data: metadata,
-                            emailRedirectTo: 'http://localhost/verify-otp_mock.php'
+                            emailRedirectTo: 'http://localhost/ASENXO-WEB-Fork/verify-otp_mock.php'
                         }
                     });
+
                     if (error) throw error;
 
                     pendingEmail = email;
@@ -382,7 +383,7 @@
                     window.location.href = 'verification.php?email=' + encodeURIComponent(email);
 
                     // Keep signup button disabled – user now verifies OTP
-                    
+
                 } catch (err) {
                     showMessage(err.message, 'error');
                     signupBtn.disabled = false;
