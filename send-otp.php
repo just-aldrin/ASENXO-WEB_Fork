@@ -11,7 +11,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 // 1. Connection Details - Host must NOT include 'https://'
-$db_host = 'aws-0-ap-southeast-1.pooler.supabase.com'; 
+$db_host = 'db.hmxrblblcpbikkxcwwni.supabase.co'; 
 $db_name = 'postgres';
 $db_user = 'postgres';
 $db_pass = 'qkoczbdhdfcmqnoi'; 
