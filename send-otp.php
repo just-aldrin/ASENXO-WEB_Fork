@@ -1,7 +1,8 @@
 <?php
 error_log("send_otp.php called with: " . file_get_contents('php://input'));
 
-require 'vendor/autoload.php';
+/* require 'vendor/autoload.php';
+ */
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
