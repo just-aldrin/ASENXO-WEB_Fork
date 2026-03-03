@@ -1,8 +1,5 @@
 <?php
-ob_clean(); // Clears any accidental whitespace or warnings
 header('Content-Type: application/json');
-error_reporting(E_ALL); 
-ini_set('display_errors', 1);
 
 require 'vendor/autoload.php';
 
@@ -24,6 +21,19 @@ $db_host = 'https://hmxrblblcpbikkxcwwni.supabase.co'; // Get this from Supabase
 $db_name = 'postgres';
 $db_user = 'postgres';
 $db_pass = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw'; // The password you set when creating the project
+
+// 4. Attempt Connection
+$conn = mysqli_connect($host, $user, $pass, $db, $port);
+
+// --- INSERT THIS PART HERE ---
+if (!$conn) {
+    echo json_encode([
+        "success" => false, 
+        "error" => "Database connection failed: " . mysqli_connect_error()
+    ]);
+    exit; // Stop the script here so it doesn't try to send an email
+}
+// -----------------------------
 
 try {
     $pdo = new PDO("pgsql:host=$db_host;dbname=$db_name", $db_user, $db_pass, [
