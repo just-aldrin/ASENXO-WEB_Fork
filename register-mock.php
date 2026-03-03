@@ -182,9 +182,9 @@
 
             // ---------- Generate random 6-digit OTP ----------
             // const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-            function generatedOtp() {
-                return Math.floor(100000 + Math.random() * 900000).toString();
-            }
+            // function generatedOtp() {
+            //    return Math.floor(100000 + Math.random() * 900000).toString();
+            // }
 
             // ---------- Send OTP via your backend (PHPMailer) ----------
             async function sendOtpEmail(email, otp) {
@@ -353,6 +353,8 @@
                 signupBtn.disabled = true;
                 signupBtn.textContent = 'Creating account...';
 
+                const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+
                 try {
                     // Build metadata object
                     const metadata = { first_name: firstName, last_name: lastName };
@@ -363,14 +365,14 @@
                         password,
                         options: { 
                             data: metadata,
-                            emailRedirectTo: 'http://localhost/ASENXO-WEB-Fork/verify-otp_mock.php'
+                            emailRedirectTo: window.location.origin + '/ASENXO-WEB-Fork/verify-otp_mock.php'
                         }
                     });
 
                     if (error) throw error;
 
                         pendingEmail = email;
-                        const otp = generatedOtp();
+                        // const otp = generatedOtp();
 
                         const response = await fetch('./send-otp.php', {
                             method: 'POST',
