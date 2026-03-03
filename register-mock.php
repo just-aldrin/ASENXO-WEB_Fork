@@ -368,27 +368,32 @@
 
                     if (error) throw error;
 
-                    pendingEmail = email;
-                    const otp = generateOtp();
-                    pendingOtp = otp;
+                        pendingEmail = email;
+                        const otp = generateOtp();
 
-                    // Send OTP via your backend (PHPMailer)
-                    await sendOtpEmail(email, otp);
+                        const response = await fetch('send-otp.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, otp })
+                        });
 
-                    // Show success message and OTP UI
-                    // showMessage(`A 6‑digit OTP has been sent to ${email}.<br>`, 'success');
-                    // reateOtpSection();
+                        const contentType = response.headers.get("content-type");
+                        if (contentType && contentType.indexOf("application/json") !== -1) {
+                            const data = await response.json();
+                            if (!data.success) throw new Error(data.error || 'Failed to send OTP');
+                        } else {
+                            const textError = await response.text();
+                            console.error("Server returned HTML instead of JSON:", textError);
+                            throw new Error("Server Error: Check your PHP logs or Network tab.");
+                        }
 
-                    // Redirect to verification.php with the email as a parameter
-                    window.location.href = 'verification.php?email=' + encodeURIComponent(email);
+                        window.location.href = 'verification.php?email=' + encodeURIComponent(email);
 
-                    // Keep signup button disabled – user now verifies OTP
-
-                } catch (err) {
-                    showMessage(err.message, 'error');
-                    signupBtn.disabled = false;
-                    signupBtn.textContent = 'Sign Up';
-                }
+                    } catch (err) {
+                        showMessage(err.message, 'error');
+                        signupBtn.disabled = false;
+                        signupBtn.textContent = 'Sign Up';
+                    }
             });
         })();
     </script>
