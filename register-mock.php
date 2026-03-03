@@ -376,7 +376,9 @@
                         body: JSON.stringify({ 
                             email: email, 
                             otp: generatedOtp 
-                    });
+
+                    })}) ;
+            
                     // Redirect to your waiting room
                     window.location.href = 'verification.php?email=' + encodeURIComponent(email);
 
@@ -386,7 +388,7 @@
                         signupBtn.textContent = 'Sign Up';
                     }
             });
-        })();
+        });
     </script>
 </body>
 </html>
