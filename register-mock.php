@@ -362,7 +362,7 @@
                         password,
                         options: { 
                             data: metadata,
-                            emailRedirectTo: 'http://localhost/verification.php' 
+                            emailRedirectTo: 'http://localhost/verify-otp_mock.php'
                         }
                     });
                     if (error) throw error;
@@ -375,10 +375,14 @@
                     await sendOtpEmail(email, otp);
 
                     // Show success message and OTP UI
-                    showMessage(`A 6‑digit OTP has been sent to ${email}.<br>`, 'success');
-                    createOtpSection();
+                    // showMessage(`A 6‑digit OTP has been sent to ${email}.<br>`, 'success');
+                    // reateOtpSection();
+
+                    // Redirect to verification.php with the email as a parameter
+                    window.location.href = 'verification.php?email=' + encodeURIComponent(email);
 
                     // Keep signup button disabled – user now verifies OTP
+                    
                 } catch (err) {
                     showMessage(err.message, 'error');
                     signupBtn.disabled = false;

@@ -1,3 +1,9 @@
+<?php
+  // In verification.php
+  $email = $_GET['email'] ?? ''; 
+?>
+<input type="hidden" id="email" value="<?php echo htmlspecialchars($email); ?>">
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
