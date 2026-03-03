@@ -12,7 +12,7 @@ use PHPMailer\PHPMailer\Exception;
 
 // 1. Connection Details - Host must NOT include 'https://'
 $db_host = 'db.hmxrblblcpbikkxcwwni.supabase.co'; 
-$db_name = 'ASENXO=Project';
+$db_name = 'postgres';
 $db_user = 'postgres';
 $db_pass = 'qkoczbdhdfcmqnoi'; 
 $db_port = 6543;
