@@ -332,63 +332,64 @@
             }
 
             // ---------- Handle form submit (sign up) ----------
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!form.checkValidity()) {
-                    form.reportValidity();
-                    return;
-                }
-
-                const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-                const email = document.querySelector('input[name="email"]').value;
-                const password = document.querySelector('input[name="password"]').value;
-                const firstName = document.querySelector('input[name="first_name"]').value;
-                const lastName = document.querySelector('input[name="last_name"]').value;
-                const referralCode = document.querySelector('input[name="referral_code"]').value;
-
-                if (password.length < 8) {
-                    showMessage('Password must be at least 8 characters.', 'error');
-                    return;
-                }
-
-                signupBtn.disabled = true;
-                signupBtn.textContent = 'Creating account...';
-
-                try {
-                    // Build metadata object
-                    const metadata = { first_name: firstName, last_name: lastName };
-                    if (referralCode) metadata.referral_code = referralCode;
-
-                   const { data, error } = await supabase.auth.signUp({
-                        email,
-                        password,
-                        options: { 
-                            data: metadata
-                        }
-                    });
-
-                    if (error) throw error; 
-
-                    // Use './' to stay inside your project folder
-                    const response = await fetch('./send-otp.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            email: email, 
-                            otp: generatedOtp 
-
-                    })}) ;
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-                    // Redirect to your waiting room
-                    window.location.href = 'verification.php?email=' + encodeURIComponent(email);
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
 
-                    } catch (err) {
-                        showMessage(err.message, 'error');
-                        signupBtn.disabled = false;
-                        signupBtn.textContent = 'Sign Up';
+            // 1. Define variables at the start of the scope
+            const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            const email = document.querySelector('input[name="email"]').value;
+            const password = document.querySelector('input[name="password"]').value;
+            const firstName = document.querySelector('input[name="first_name"]').value;
+            const lastName = document.querySelector('input[name="last_name"]').value;
+            const referralCode = document.querySelector('input[name="referral_code"]').value;
+
+            signupBtn.disabled = true;
+            signupBtn.textContent = 'Creating account...';
+
+            try {
+                // 2. Register with Supabase (Email confirmations must be OFF in Supabase Dashboard)
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { 
+                        data: { first_name: firstName, last_name: lastName, referral_code: referralCode }
                     }
-            });
+                });
+
+                if (error) throw error; 
+
+                // 3. Call your custom PHP Mailer using the relative path
+                const response = await fetch('./send-otp.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: email, 
+                        otp: generatedOtp 
+                    })
+                });
+
+                const mailResult = await response.json();
+
+                if (mailResult.success) {
+                    // 4. ONLY redirect if the email was successfully sent
+                    window.location.href = 'verification.php?email=' + encodeURIComponent(email);
+                } else {
+                    throw new Error(mailResult.error || 'Account created, but failed to send OTP.');
+                }
+
+            } catch (err) {
+                // If the user already exists, Supabase returns 422
+                showMessage(err.message, 'error');
+                signupBtn.disabled = false;
+                signupBtn.textContent = 'Sign Up';
+            }
         });
-    </script>
+    })();
+</script>
 </body>
 </html>
