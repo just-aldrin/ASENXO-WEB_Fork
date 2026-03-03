@@ -1,12 +1,19 @@
 <?php
 header('Content-Type: application/json');
 
+error_reporting(0); 
+ini_set('display_errors', 0);
+
 require 'vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-header('Content-Type: application/json');
+
+$db_host = 'https://hmxrblblcpbikkxcwwni.supabase.co'; // Get this from Supabase Settings > Database
+$db_name = 'postgres';
+$db_user = 'postgres';
+$db_pass = 'qkoczbdhdfcmqnoi';
 
 $data = json_decode(file_get_contents('php://input'), true);
 $email = trim($data['email'] ?? '');
@@ -17,10 +24,6 @@ if (empty($email) || empty($otp)) {
     exit;
 }
 
-$db_host = 'https://hmxrblblcpbikkxcwwni.supabase.co'; // Get this from Supabase Settings > Database
-$db_name = 'postgres';
-$db_user = 'postgres';
-$db_pass = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw'; // The password you set when creating the project
 
 // 4. Attempt Connection
 $conn = mysqli_connect($host, $user, $pass, $db, $port);
