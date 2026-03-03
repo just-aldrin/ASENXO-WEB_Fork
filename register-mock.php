@@ -374,10 +374,14 @@
                         pendingEmail = email;
                         // const otp = generatedOtp();
 
+                        // Change 'send-otp.php' to './send-otp.php'
                         const response = await fetch('./send-otp.php', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email, otp: generatedOtp })
+                            body: JSON.stringify({ 
+                                email: email, 
+                                otp: generatedOtp // This variable is now defined!
+                            })
                         });
 
                         const contentType = response.headers.get("content-type");
