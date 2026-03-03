@@ -1,4 +1,9 @@
 <?php
+ob_clean(); // Clears any accidental whitespace or warnings
+header('Content-Type: application/json');
+error_reporting(E_ALL); 
+ini_set('display_errors', 1);
+
 require 'vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
