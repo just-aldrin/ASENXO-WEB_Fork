@@ -357,42 +357,26 @@
                     const metadata = { first_name: firstName, last_name: lastName };
                     if (referralCode) metadata.referral_code = referralCode;
 
-                    const { data, error } = await supabase.auth.signUp({
+                   const { data, error } = await supabase.auth.signUp({
                         email,
                         password,
                         options: { 
-                            data: metadata,
-                            emailRedirectTo: window.location.origin + '/ASENXO-WEB-Fork/verify-otp_mock.php'
+                            data: metadata
                         }
                     });
 
                     if (error) throw error;
 
-                       pendingEmail = email;
-                        const otpCode = generateOtp(); 
+                    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
 
-                        const response = await fetch('send-otp.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                email: email, 
-                                otp: otpCode 
-                            })
-                        });
+                    const response = await fetch('./send-otp.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email, otp: generatedOtp })
+                    });
 
-                        const contentType = response.headers.get("content-type");
-
-                        if (contentType && contentType.includes("application/json")) {
-                            const resData = await response.json();
-                            if (!resData.success) throw new Error(resData.error || 'Failed to send OTP');
-                            window.location.href = 'verification.php?email=' + encodeURIComponent(email);
-                        } else {
-                            const textError = await response.text();
-                            console.error("PHP Error Detail:", textError);
-                            throw new Error("Server Error: PHP returned HTML. Check Console (F12) > Errors.");
-                        }
-
-                        window.location.href = 'verification.php?email=' + encodeURIComponent(email);
+                    // Redirect to your waiting room
+                    window.location.href = 'verification.php?email=' + encodeURIComponent(email);
 
                     } catch (err) {
                         showMessage(err.message, 'error');
