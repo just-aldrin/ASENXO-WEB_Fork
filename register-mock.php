@@ -181,9 +181,9 @@
             }
 
             // ---------- Generate random 6-digit OTP ----------
-            // function generatedOtp() {
-            //    return Math.floor(100000 + Math.random() * 900000).toString();
-            // }
+            function generateOtp() {
+                  return Math.floor(100000 + Math.random() * 900000).toString();
+            }
 
             // ---------- Send OTP via your backend (PHPMailer) ----------
             async function sendOtpEmail(email, otp) {
@@ -370,28 +370,30 @@
 
                     if (error) throw error;
 
-                        pendingEmail = email;
-                        const otp = generatedOtp();
+                       pendingEmail = email;
+                        const otpCode = generateOtp(); 
 
                         const response = await fetch('./send-otp.php', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ 
                                 email: email, 
-                                otp: generatedOtp 
+                                otp: otpCode 
                             })
                         });
 
                         const contentType = response.headers.get("content-type");
-                        if (contentType && contentType.indexOf("application/json") !== -1) {
-                            const data = await response.json();
-                            if (!data.success) throw new Error(data.error || 'Failed to send OTP');
+
+                        if (contentType && contentType.includes("application/json")) {
+                            const resData = await response.json();
+                            if (!resData.success) throw new Error(resData.error || 'Failed to send OTP');
+                            window.location.href = 'verification.php?email=' + encodeURIComponent(email);
                         } else {
                             const textError = await response.text();
-                            console.error("Server returned HTML instead of JSON:", textError);
-                            throw new Error("Server Error: Check your PHP logs or Network tab.");
+                            console.error("PHP Error Detail:", textError);
+                            throw new Error("Server Error: PHP returned HTML. Check Console (F12) > Errors.");
                         }
-
+                        
                         window.location.href = 'verification.php?email=' + encodeURIComponent(email);
 
                     } catch (err) {
