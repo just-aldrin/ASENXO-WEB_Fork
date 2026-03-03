@@ -181,10 +181,10 @@
             }
 
             // ---------- Generate random 6-digit OTP ----------
-            const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-            // function generateOtp() {
-            //    return Math.floor(100000 + Math.random() * 900000).toString();
-            // }
+            // const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            function generatedOtp() {
+                return Math.floor(100000 + Math.random() * 900000).toString();
+            }
 
             // ---------- Send OTP via your backend (PHPMailer) ----------
             async function sendOtpEmail(email, otp) {
