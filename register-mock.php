@@ -362,7 +362,7 @@
                         password,
                         options: { 
                             data: metadata,
-                            emailRedirectTo: 'http://localhost/' 
+                            emailRedirectTo: 'http://localhost/verification.php' 
                         }
                     });
                     if (error) throw error;
