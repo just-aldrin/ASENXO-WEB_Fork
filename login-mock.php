@@ -1,3 +1,8 @@
+<?php
+// login-mock.php
+session_start();
+$verified = $_GET['verified'] ?? false;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +17,16 @@
         .form-message { margin-top: 1rem; padding: 0.75rem; border-radius: 8px; font-size: 0.9rem; display: none; }
         .form-message.success { background-color: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); display: block; }
         .form-message.error { background-color: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); display: block; }
+        .verification-banner {
+            background: rgba(226,185,116,0.15);
+            border: 1px solid rgba(226,185,116,0.3);
+            color: #e2b974;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: <?php echo $verified ? 'block' : 'none'; ?>;
+        }
     </style>
 </head>
 <body>
@@ -19,6 +34,10 @@
         <div class="login-card">
             <div class="form-col">
                 <a href="index.php"><img src="src/img/logo-name.png" class="form-logo" alt="ASENXO Logo"></a>
+
+                <div class="verification-banner" id="verificationBanner">
+                    <i class="fas fa-check-circle"></i> Email verified successfully! You can now log in.
+                </div>
 
                 <button class="google-btn" type="button" id="googleLogin">
                     <i class="fab fa-google"></i> Login with Google
@@ -64,7 +83,6 @@
         </div>
     </main>
 
-    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         (function() {
@@ -109,33 +127,55 @@
                         email,
                         password
                     });
-                    if (error) throw error;
+
+                    if (error) {
+                        if (error.message.includes('Email not confirmed')) {
+                            throw new Error('Please verify your email first. Check your inbox for the verification code.');
+                        }
+                        throw error;
+                    }
 
                     formMessage.className = 'form-message success';
                     formMessage.textContent = 'Login successful! Redirecting...';
+                    
                     setTimeout(() => {
-                        window.location.href = 'msme-home.php'; // or your desired landing page
+                        window.location.href = 'msme-home.php';
                     }, 1500);
+
                 } catch (err) {
                     formMessage.className = 'form-message error';
                     formMessage.textContent = err.message;
-                } finally {
                     loginBtn.disabled = false;
                     loginBtn.textContent = 'Sign In';
                 }
             });
 
-            // Google login (optional)
+            // Google login
             document.getElementById('googleLogin').addEventListener('click', async () => {
-                const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+                const { error } = await supabase.auth.signInWithOAuth({ 
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin + '/msme-home.php'
+                    }
+                });
                 if (error) console.error(error);
             });
 
-            // Forgot password (optional)
+            // Forgot password
             document.getElementById('forgotPassword').addEventListener('click', (e) => {
                 e.preventDefault();
-                // You can implement password reset flow using supabase.auth.resetPasswordForEmail()
-                alert('Password reset feature - implement via supabase.auth.resetPasswordForEmail()');
+                const email = prompt('Enter your email address to reset your password:');
+                if (email) {
+                    supabase.auth.resetPasswordForEmail(email, {
+                        redirectTo: window.location.origin + '/reset-password.php'
+                    }).then(({ error }) => {
+                        if (error) {
+                            alert('Error: ' + error.message);
+                        } else {
+                            alert('Password reset email sent! Check your inbox.');
+                        }
+                    });
+                }
             });
         })();
     </script>

@@ -1,4 +1,5 @@
 <?php
+// register-mock.php
 session_start();
 ?>
 <!DOCTYPE html>
@@ -77,11 +78,11 @@ session_start();
 
                     <div class="input-group">
                         <label>Referral Code (Optional)</label>
-                        <input type="text" name="referral_code">
+                        <input type="text" name="referral_code" value="ADM0004">
                     </div>
 
                     <div class="agree-row">
-                        <input type="checkbox" name="terms" required>
+                        <input type="checkbox" name="terms" required checked>
                         <label>I agree to <span id="termsLink">Terms and Conditions</span></label>
                     </div>
 
@@ -193,6 +194,11 @@ session_start();
                 formMessage.innerHTML = text;
             }
 
+            // Generate random 6-digit OTP
+            function generateOtp() {
+                return Math.floor(100000 + Math.random() * 900000).toString();
+            }
+
             // Handle form submit
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -230,49 +236,42 @@ session_start();
                     if (error) throw error;
 
                     // Generate OTP
-                    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+                    const generatedOtp = generateOtp();
 
-                    // Store in session storage
+                    // Try to send email via send-otp.php (will work if configured)
+                    try {
+                        const response = await fetch('send-otp.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                email: email, 
+                                otp: generatedOtp,
+                                firstName: firstName,
+                                lastName: lastName
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        if (!result.success) {
+                            console.warn('Email sending warning:', result.error);
+                        }
+                    } catch (emailErr) {
+                        console.warn('Email service unavailable:', emailErr);
+                        // Continue with session storage - email will be shown in alert
+                    }
+
+                    // Store ALL registration data in session storage
                     sessionStorage.setItem('pending_email', email);
                     sessionStorage.setItem('pending_otp', generatedOtp);
                     sessionStorage.setItem('pending_first_name', firstName);
                     sessionStorage.setItem('pending_last_name', lastName);
+                    sessionStorage.setItem('pending_referral_code', referralCode);
                     
-                    // Show OTP in alert for testing
+                    // For testing, show OTP in alert
                     alert(`Your verification code is: ${generatedOtp}\n\n(This is for testing - in production, this would be sent via email)`);
                     
-                    // Redirect to verification
+                    // Redirect to verification page
                     window.location.href = 'verification.php?email=' + encodeURIComponent(email);
-
-                    /* // Send OTP email
-                    const response = await fetch('send-otp.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            email: email, 
-                            otp: generatedOtp,
-                            firstName: firstName,
-                            lastName: lastName
-                        })
-                    }); */
-
-                    /* const mailResult = await response.json();
-
-                    if (mailResult.success) {
-                        // Store registration data in session storage for verification page
-                        sessionStorage.setItem('pending_email', email);
-                        sessionStorage.setItem('pending_otp', generatedOtp);
-                        sessionStorage.setItem('pending_user_data', JSON.stringify({
-                            first_name: firstName,
-                            last_name: lastName,
-                            referral_code: referralCode
-                        }));
-                        
-                        // Redirect to verification page
-                        window.location.href = 'verification.php?email=' + encodeURIComponent(email);
-                    } else {
-                        throw new Error(mailResult.error || 'Failed to send verification email.');
-                    } */
 
                 } catch (err) {
                     showMessage(err.message, 'error');
@@ -286,7 +285,7 @@ session_start();
                 const { error } = await supabase.auth.signInWithOAuth({ 
                     provider: 'google',
                     options: {
-                        redirectTo: window.location.origin + '/verification.php'
+                        redirectTo: window.location.origin + '/msme-home.php'
                     }
                 });
                 if (error) console.error(error);
