@@ -200,99 +200,80 @@ session_start();
         }
 
         // Handle form submit
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
+        // register-mock.php (Update this section)
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const email = document.querySelector('input[name="email"]').value;
+    const password = document.querySelector('input[name="password"]').value;
+    const firstName = document.querySelector('input[name="first_name"]').value;
+    const lastName = document.querySelector('input[name="last_name"]').value;
+    const referralCode = document.querySelector('input[name="referral_code"]').value;
 
-            // Get form data
-            const email = document.querySelector('input[name="email"]').value;
-            const password = document.querySelector('input[name="password"]').value;
-            const firstName = document.querySelector('input[name="first_name"]').value;
-            const lastName = document.querySelector('input[name="last_name"]').value;
-            const referralCode = document.querySelector('input[name="referral_code"]').value;
+    signupBtn.disabled = true;
+    signupBtn.textContent = 'Creating account...';
 
-            signupBtn.disabled = true;
-            signupBtn.textContent = 'Creating account...';
-
-            try {
-                console.log('Attempting to sign up with:', email);
-                
-                // Register with Supabase
-                const { data, error } = await supabase.auth.signUp({
-                    email,
-                    password,
-                    options: { 
-                        data: { 
-                            first_name: firstName, 
-                            last_name: lastName, 
-                            referral_code: referralCode,
-                            email_verified: false
-                        }
-                    }
-                });
-
-                if (error) {
-                    console.error('Supabase error:', error);
-                    throw error;
-                }
-
-                console.log('✅ Signup successful:', data);
-
-                // Generate OTP
-                const generatedOtp = generateOtp();
-
-                // Try to send email, but don't fail if it doesn't work
-                try {
-                    const response = await fetch('send-otp.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            email: email, 
-                            otp: generatedOtp,
-                            firstName: firstName,
-                            lastName: lastName
-                        })
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log('Email response:', result);
-                    } else {
-                        console.warn('Email server responded with status:', response.status);
-                    }
-                } catch (emailErr) {
-                    console.warn('Email sending failed, but continuing with session storage:', emailErr);
-                }
-
-                // Store in session storage
-                sessionStorage.setItem('pending_email', email);
-                sessionStorage.setItem('pending_otp', generatedOtp);
-                sessionStorage.setItem('pending_first_name', firstName);
-                sessionStorage.setItem('pending_last_name', lastName);
-                sessionStorage.setItem('pending_referral_code', referralCode);
-                
-                // Show OTP in alert for testing
-                alert(`Your verification code is: ${generatedOtp}\n\n(This is for testing - in production, this would be sent via email)`);
-                
-                // Show success message
-                showMessage('Account created! Please check your email for verification code.', 'success');
-                
-                // Redirect to verification page
-                setTimeout(() => {
-                    window.location.href = 'verification.php?email=' + encodeURIComponent(email);
-                }, 1500);
-
-            } catch (err) {
-                console.error('Registration error:', err);
-                showMessage(err.message || 'Error creating account', 'error');
-                signupBtn.disabled = false;
-                signupBtn.textContent = 'Sign Up';
+    try {
+        // 1. Register with Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { 
+                data: { first_name: firstName, last_name: lastName, referral_code: referralCode }
             }
         });
+
+        if (authError) throw authError;
+
+        // 2. Generate OTP and Expiry (10 minutes)
+        const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 10 * 60000).toISOString();
+
+        // 3. CRITICAL: Save OTP to the DATABASE table
+        const { error: dbError } = await supabase
+            .from('email_verifications')
+            .upsert({ 
+                email: email, 
+                otp: generatedOtp, 
+                expires_at: expiresAt,
+                attempts: 0 
+            }, { onConflict: 'email' });
+
+        if (dbError) {
+            console.error('Database Error:', dbError);
+            throw new Error('Failed to save verification code. Please try again.');
+        }
+
+        // 4. Send the Email
+        try {
+            await fetch('send-otp.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email: email, 
+                    otp: generatedOtp,
+                    firstName: firstName
+                })
+            });
+        } catch (emailErr) {
+            console.warn('Email delivery failed, but code is in DB:', emailErr);
+        }
+
+        // 5. Success UI and Redirect
+        alert(`Your verification code is: ${generatedOtp}`);
+        showMessage('Account created! Redirecting to verification...', 'success');
+        
+        setTimeout(() => {
+            window.location.href = 'verification.php?email=' + encodeURIComponent(email);
+        }, 1500);
+
+    } catch (err) {
+        console.error('Registration error:', err);
+        showMessage(err.message || 'Error creating account', 'error');
+        signupBtn.disabled = false;
+        signupBtn.textContent = 'Sign Up';
+    }
+});
     })();
     </script>
 </body>
