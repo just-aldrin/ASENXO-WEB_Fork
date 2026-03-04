@@ -1,7 +1,7 @@
 <?php
 // verify-otp.php
 header('Content-Type: application/json');
-error_reporting(0);
+error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
 require 'vendor/autoload.php';
@@ -9,17 +9,21 @@ require 'vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Database configuration - UPDATED HOST
-$db_host = 'db.hmxrblblcpbikkxcwwni.supabase.co'; // Corrected host
-$db_name = 'postgres';
-$db_user = 'postgres';
-$db_pass = 'qkoczbdhdfcmqnoi';
+// Supabase Database Connection - UPDATE THESE VALUES
+$db_host = 'aws-1-ap-southeast-2.pooler.supabase.com';
 $db_port = 6543;
+$db_name = 'postgres';
+$db_user = 'postgres.hmxrblblcpbikkxcwwni';
+$db_pass = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw';
+// old pass > qkoczbdhdfcmqnoi
 
 // Get input data
 $data = json_decode(file_get_contents('php://input'), true);
 $email = trim($data['email'] ?? '');
 $otp = trim($data['otp'] ?? '');
+$firstName = trim($data['first_name'] ?? '');
+$lastName = trim($data['last_name'] ?? '');
+$referralCode = trim($data['referral_code'] ?? '');
 
 if (empty($email) || empty($otp)) {
     echo json_encode(['success' => false, 'error' => 'Email and OTP are required']);
@@ -27,11 +31,11 @@ if (empty($email) || empty($otp)) {
 }
 
 try {
-    // Connect to database
-    $dsn = "pgsql:host=$db_host;port=$db_port;dbname=$db_name";
+    // Connect to Supabase PostgreSQL
+    $dsn = "pgsql:host=$db_host;port=$db_port;dbname=$db_name;sslmode=require";
     $pdo = new PDO($dsn, $db_user, $db_pass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_TIMEOUT => 5
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
 
     // Start transaction
@@ -46,7 +50,7 @@ try {
         AND attempts < 5
     ");
     $stmt->execute(['email' => $email, 'otp' => $otp]);
-    $verification = $stmt->fetch(PDO::FETCH_ASSOC);
+    $verification = $stmt->fetch();
 
     if (!$verification) {
         // Increment attempts
@@ -64,30 +68,32 @@ try {
     // Delete used OTP
     $pdo->prepare("DELETE FROM email_verifications WHERE email = :email")->execute(['email' => $email]);
 
-    // Get user from auth.users and insert into user_profiles
-    // Note: You need to connect to Supabase Auth to get the user ID
-    // For now, we'll create a basic user profile
+    // Get user from auth.users and insert/update user_profiles
+    // Note: You'll need to get the user ID from Supabase Auth
+    // For now, we'll create/update the profile
     $stmt = $pdo->prepare("
         INSERT INTO user_profiles (id, email, first_name, last_name, referral_code, email_verified)
         VALUES (
             gen_random_uuid(), 
             :email, 
-            COALESCE(:first_name, ''), 
-            COALESCE(:last_name, ''), 
-            COALESCE(:referral_code, ''), 
+            :first_name, 
+            :last_name, 
+            :referral_code, 
             TRUE
         )
         ON CONFLICT (email) DO UPDATE
-        SET email_verified = TRUE, updated_at = CURRENT_TIMESTAMP
+        SET email_verified = TRUE, 
+            first_name = EXCLUDED.first_name,
+            last_name = EXCLUDED.last_name,
+            referral_code = EXCLUDED.referral_code,
+            updated_at = NOW()
     ");
     
-    // Get user data from session or request
-    $userData = json_decode(file_get_contents('php://input'), true);
     $stmt->execute([
         'email' => $email,
-        'first_name' => $userData['first_name'] ?? '',
-        'last_name' => $userData['last_name'] ?? '',
-        'referral_code' => $userData['referral_code'] ?? ''
+        'first_name' => $firstName,
+        'last_name' => $lastName,
+        'referral_code' => $referralCode
     ]);
 
     $pdo->commit();
@@ -102,32 +108,56 @@ try {
         $mail->Password   = 'qkoczbdhdfcmqnoi';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
-        $mail->Timeout    = 10;
 
         $mail->setFrom('dost.asenxo@gmail.com', 'ASENXO');
-        $mail->addAddress($email);
+        $mail->addAddress($email, "$firstName $lastName");
         $mail->isHTML(true);
         $mail->Subject = 'Welcome to ASENXO!';
         $mail->Body = "
-            <h2>Welcome to ASENXO!</h2>
-            <p>Your email has been successfully verified.</p>
-            <p>You can now log in to your account and start using our services.</p>
-            <p><a href='https://" . $_SERVER['HTTP_HOST'] . "/login-mock.php' style='background: #e2b974; color: #000; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Log In Now</a></p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: 'Inter', sans-serif; line-height: 1.6; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: #e2b974; color: #000; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                .content { padding: 30px; background: #f9f9f9; }
+                .button { display: inline-block; background: #e2b974; color: #000; padding: 12px 30px; text-decoration: none; border-radius: 5px; }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h1>Welcome to ASENXO!</h1>
+                </div>
+                <div class='content'>
+                    <h2>Hi " . htmlspecialchars($firstName) . ",</h2>
+                    <p>Your email has been successfully verified. You can now log in to your account and start using ASENXO.</p>
+                    <div style='text-align: center; margin: 30px 0;'>
+                        <a href='http://" . $_SERVER['HTTP_HOST'] . "/login-mock.php' class='button'>Log In to Your Account</a>
+                    </div>
+                    <p>If you have any questions, feel free to contact our support team.</p>
+                    <p>Best regards,<br>The ASENXO Team</p>
+                </div>
+            </div>
+        </body>
+        </html>
         ";
-
         $mail->send();
     } catch (Exception $e) {
-        // Log welcome email error but don't fail the verification
-        error_log("Welcome email failed: " . $mail->ErrorInfo);
+        // Log welcome email error but don't fail verification
+        error_log("Welcome email failed: " . $e->getMessage());
     }
 
     echo json_encode(['success' => true]);
 
 } catch (PDOException $e) {
     if (isset($pdo)) $pdo->rollBack();
+    error_log("Database error in verify-otp.php: " . $e->getMessage());
     echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
 } catch (Exception $e) {
     if (isset($pdo)) $pdo->rollBack();
+    error_log("Server error in verify-otp.php: " . $e->getMessage());
     echo json_encode(['success' => false, 'error' => 'Server error: ' . $e->getMessage()]);
 }
 ?>

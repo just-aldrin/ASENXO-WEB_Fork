@@ -199,47 +199,46 @@ session_start();
                 return Math.floor(100000 + Math.random() * 900000).toString();
             }
 
-            // Handle form submit
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                if (!form.checkValidity()) {
-                    form.reportValidity();
-                    return;
-                }
+                // Handle form submit
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    if (!form.checkValidity()) {
+                        form.reportValidity();
+                        return;
+                    }
 
-                // Get form data
-                const email = document.querySelector('input[name="email"]').value;
-                const password = document.querySelector('input[name="password"]').value;
-                const firstName = document.querySelector('input[name="first_name"]').value;
-                const lastName = document.querySelector('input[name="last_name"]').value;
-                const referralCode = document.querySelector('input[name="referral_code"]').value;
+                    // Get form data
+                    const email = document.querySelector('input[name="email"]').value;
+                    const password = document.querySelector('input[name="password"]').value;
+                    const firstName = document.querySelector('input[name="first_name"]').value;
+                    const lastName = document.querySelector('input[name="last_name"]').value;
+                    const referralCode = document.querySelector('input[name="referral_code"]').value;
 
-                signupBtn.disabled = true;
-                signupBtn.textContent = 'Creating account...';
+                    signupBtn.disabled = true;
+                    signupBtn.textContent = 'Creating account...';
 
-                try {
-                    // Register with Supabase
-                    const { data, error } = await supabase.auth.signUp({
-                        email,
-                        password,
-                        options: { 
-                            data: { 
-                                first_name: firstName, 
-                                last_name: lastName, 
-                                referral_code: referralCode,
-                                email_verified: false
-                            }
-                        }
-                    });
-
-                    if (error) throw error;
-
-                    // Generate OTP
-                    const generatedOtp = generateOtp();
-
-                    // Try to send email via send-otp.php (will work if configured)
                     try {
+                        // Register with Supabase
+                        const { data, error } = await supabase.auth.signUp({
+                            email,
+                            password,
+                            options: { 
+                                data: { 
+                                    first_name: firstName, 
+                                    last_name: lastName, 
+                                    referral_code: referralCode,
+                                    email_verified: false
+                                }
+                            }
+                        });
+
+                        if (error) throw error;
+
+                        // Generate OTP
+                        const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+
+                        // Send OTP email via backend
                         const response = await fetch('send-otp.php', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -250,46 +249,35 @@ session_start();
                                 lastName: lastName
                             })
                         });
-                        
+
                         const result = await response.json();
+                        
                         if (!result.success) {
-                            console.warn('Email sending warning:', result.error);
+                            console.warn('Email warning:', result.error);
+                            // Still continue - fallback to session storage
                         }
-                    } catch (emailErr) {
-                        console.warn('Email service unavailable:', emailErr);
-                        // Continue with session storage - email will be shown in alert
-                    }
 
-                    // Store ALL registration data in session storage
-                    sessionStorage.setItem('pending_email', email);
-                    sessionStorage.setItem('pending_otp', generatedOtp);
-                    sessionStorage.setItem('pending_first_name', firstName);
-                    sessionStorage.setItem('pending_last_name', lastName);
-                    sessionStorage.setItem('pending_referral_code', referralCode);
-                    
-                    // For testing, show OTP in alert
-                    alert(`Your verification code is: ${generatedOtp}\n\n(This is for testing - in production, this would be sent via email)`);
-                    
-                    // Redirect to verification page
-                    window.location.href = 'verification.php?email=' + encodeURIComponent(email);
+                        // Store in session storage as backup
+                        sessionStorage.setItem('pending_email', email);
+                        sessionStorage.setItem('pending_otp', generatedOtp);
+                        sessionStorage.setItem('pending_first_name', firstName);
+                        sessionStorage.setItem('pending_last_name', lastName);
+                        sessionStorage.setItem('pending_referral_code', referralCode);
+                        
+                        // Show success message
+                        showMessage('Account created! Check your email for verification code.', 'success');
+                        
+                        // Redirect to verification page
+                        setTimeout(() => {
+                            window.location.href = 'verification.php?email=' + encodeURIComponent(email);
+                        }, 1500);
 
-                } catch (err) {
-                    showMessage(err.message, 'error');
-                    signupBtn.disabled = false;
-                    signupBtn.textContent = 'Sign Up';
-                }
-            });
-
-            // Google registration
-            document.getElementById('googleRegister').addEventListener('click', async () => {
-                const { error } = await supabase.auth.signInWithOAuth({ 
-                    provider: 'google',
-                    options: {
-                        redirectTo: window.location.origin + '/msme-home.php'
+                    } catch (err) {
+                        showMessage(err.message, 'error');
+                        signupBtn.disabled = false;
+                        signupBtn.textContent = 'Sign Up';
                     }
                 });
-                if (error) console.error(error);
-            });
         })();
     </script>
 </body>
