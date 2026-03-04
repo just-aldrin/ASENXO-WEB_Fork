@@ -15,7 +15,7 @@ $db_host = 'aws-1-ap-southeast-2.pooler.supabase.com'; // From connection string
 $db_port = 6543;
 $db_name = 'postgres';
 $db_user = 'postgres.hmxrblblcpbikkxcwwni'; // Your project reference
-$db_pass = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw'; // Your database password
+$db_pass = 'qkoczbdhdfcmqnoi'; // Your database password
 // old pass > qkoczbdhdfcmqnoi
 
 // Get input data

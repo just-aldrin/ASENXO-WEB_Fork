@@ -14,7 +14,7 @@ $db_host = 'aws-1-ap-southeast-2.pooler.supabase.com';
 $db_port = 6543;
 $db_name = 'postgres';
 $db_user = 'postgres.hmxrblblcpbikkxcwwni';
-$db_pass = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw';
+$db_pass = 'qkoczbdhdfcmqnoi';
 
 try {
     $dsn = "pgsql:host=$db_host;port=$db_port;dbname=$db_name;sslmode=require";
