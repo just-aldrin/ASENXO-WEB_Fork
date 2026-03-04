@@ -9,8 +9,8 @@ require 'vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Database configuration
-$db_host = 'db.hmxrblblcpbikkxcwwni.supabase.co';
+// Database configuration - UPDATED HOST
+$db_host = 'db.hmxrbbllcbpkkksxwwni.supabase.co'; // Corrected host
 $db_name = 'postgres';
 $db_user = 'postgres';
 $db_pass = 'qkoczbdhdfcmqnoi';
@@ -32,8 +32,36 @@ try {
     // Connect to database
     $dsn = "pgsql:host=$db_host;port=$db_port;dbname=$db_name";
     $pdo = new PDO($dsn, $db_user, $db_pass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_TIMEOUT => 5
     ]);
+
+    // Check if email_verifications table exists, if not create it
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS email_verifications (
+            id SERIAL PRIMARY KEY,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            otp VARCHAR(6) NOT NULL,
+            expires_at TIMESTAMP NOT NULL,
+            attempts INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    ");
+
+    // Check if user_profiles table exists, if not create it
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS user_profiles (
+            id UUID PRIMARY KEY,
+            first_name VARCHAR(255) NOT NULL,
+            last_name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            referral_code VARCHAR(255),
+            email_verified BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    ");
 
     // Save OTP in database
     $stmt = $pdo->prepare("
@@ -43,7 +71,7 @@ try {
         SET otp = EXCLUDED.otp, 
             expires_at = EXCLUDED.expires_at,
             attempts = 0,
-            updated_at = NOW()
+            updated_at = CURRENT_TIMESTAMP
     ");
     $stmt->execute(['email' => $email, 'otp' => $otp]);
 
@@ -56,6 +84,7 @@ try {
     $mail->Password   = 'qkoczbdhdfcmqnoi';
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port       = 587;
+    $mail->Timeout    = 10;
 
     $mail->setFrom('dost.asenxo@gmail.com', 'ASENXO');
     $mail->addAddress($email);
@@ -63,7 +92,8 @@ try {
     $mail->Subject = 'Verify Your ASENXO Account';
     
     // Build verification link
-    $verificationLink = 'https://' . $_SERVER['HTTP_HOST'] . '/verification.php?email=' . urlencode($email);
+    $protocol = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
+    $verificationLink = $protocol . $_SERVER['HTTP_HOST'] . '/verification.php?email=' . urlencode($email);
     
     // HTML email template
     $mail->Body = "
