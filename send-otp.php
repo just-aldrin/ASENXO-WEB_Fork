@@ -41,7 +41,7 @@ try {
     
     $mail->Body = "
     <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;'>
-        <div style='background: #166534; color: #000; padding: 20px; text-align: center;'>
+        <div style='background: #00df8d; color: #000; padding: 20px; text-align: center;'>
             <h2>Welcome to ASENXO, " . htmlspecialchars($firstName) . "!</h2>
         </div>
         <div style='padding: 30px; text-align: center;'>
@@ -49,7 +49,7 @@ try {
             <h1 style='font-size: 48px; letter-spacing: 10px; color: #1e293b; margin: 20px 0;'>$otp</h1>
             <p style='color: #888;'>This code will expire in 10 minutes.</p>
             <div style='margin-top: 30px;'>
-                <a href='$verificationLink' style='background: #000; color: #fff; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Verify Email Now</a>
+                <a href='$verificationLink' style='background: #00df8d; color: #000; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Verify Email Now</a>
             </div>
         </div>
     </div>";

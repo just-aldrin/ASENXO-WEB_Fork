@@ -19,7 +19,7 @@ $verified = $_GET['verified'] ?? false;
         .verification-banner {
             background: rgba(226,185,116,0.15);
             border: 1px solid rgba(226,185,116,0.3);
-            color: #e2b974;
+            color: #2ecc71;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
