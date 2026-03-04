@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +12,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="src/css/register-style.css">
+    <style>
+        .password-wrapper { position: relative; }
+        .password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #888; }
+        .password-checklist { list-style: none; padding: 10px; margin: 10px 0 0; background: #1a1a1a; border-radius: 8px; font-size: 13px; }
+        .password-checklist li { color: #888; margin-bottom: 5px; }
+        .password-checklist li.valid { color: #2ecc71; }
+        .password-checklist li.valid:before { content: "✓ "; }
+        .password-checklist li.invalid:before { content: "✗ "; }
+        .form-message { margin-top: 1rem; padding: 0.75rem; border-radius: 8px; font-size: 0.9rem; display: none; }
+        .form-message.success { background-color: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); display: block; }
+        .form-message.error { background-color: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); display: block; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #1a1a1a; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+    </style>
 </head>
 <body>
     <main class="register-page">
@@ -16,8 +33,8 @@
             <div class="form-col">
                 <a href="index.php"><img src="src/img/logo-name.png" class="form-logo" alt="ASENXO Logo"></a>
 
-                <button class="google-btn" type="button">
-                    <i class="fab fa-google"></i> Login with Google
+                <button class="google-btn" type="button" id="googleRegister">
+                    <i class="fab fa-google"></i> Sign up with Google
                 </button>
 
                 <div class="divider">
@@ -73,8 +90,6 @@
                     <button type="submit" class="signup-btn" id="signupBtn">Sign Up</button>
                 </form>
 
-                <!-- OTP section will be injected here -->
-
                 <div class="login-link">
                     Already have an account? <a href="login-mock.php">Log in</a>
                 </div>
@@ -82,25 +97,36 @@
         </div>
     </main>
 
-    <!-- Terms Modal (keep your existing modal content) -->
+    <!-- Terms Modal -->
     <div id="termsModal" class="modal">
         <div class="modal-content">
-            <h4>Terms and Conditions</h4>
-            <p>...</p>
-            <button class="close-modal" id="closeModal">Close</button>
+            <h4 style="color: #e2b974; margin-bottom: 20px;">Terms and Conditions</h4>
+            <div style="color: #ccc; line-height: 1.6;">
+                <p>1. Acceptance of Terms</p>
+                <p style="font-size: 14px; margin-bottom: 15px;">By accessing and using ASENXO services, you accept and agree to be bound by these terms.</p>
+                
+                <p>2. User Accounts</p>
+                <p style="font-size: 14px; margin-bottom: 15px;">You are responsible for maintaining the confidentiality of your account credentials.</p>
+                
+                <p>3. Privacy</p>
+                <p style="font-size: 14px; margin-bottom: 15px;">Your data is handled according to our Privacy Policy.</p>
+                
+                <p>4. Verification</p>
+                <p style="font-size: 14px; margin-bottom: 15px;">You must verify your email address to activate your account.</p>
+            </div>
+            <button class="close-modal" id="closeModal" style="background: #e2b974; color: #000; border: none; padding: 10px 30px; border-radius: 5px; margin-top: 20px; cursor: pointer; width: 100%;">Close</button>
         </div>
     </div>
 
-    <!-- Supabase JS library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         (function() {
-            // ---------- Supabase client ----------
+            // Supabase client
             const SUPABASE_URL = 'https://hmxrblblcpbikkxcwwni.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw';
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            // ---------- DOM elements ----------
+            // DOM elements
             const form = document.getElementById('registerForm');
             const signupBtn = document.getElementById('signupBtn');
             const formMessage = document.getElementById('formMessage');
@@ -131,7 +157,7 @@
             if (closeBtn) closeBtn.addEventListener('click', () => modal.style.display = 'none');
             window.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
 
-            // ---------- Password Checklist ----------
+            // Password Checklist
             const password = document.getElementById("password");
             const checklist = document.getElementById("passwordChecklist");
             if (password && checklist) {
@@ -161,235 +187,99 @@
                 });
             }
 
-            // ---------- State ----------
-            let pendingEmail = null;
-            let pendingOtp = null; // store the generated OTP
-            let resendTimerInterval = null;
-            const RESEND_COOLDOWN = 59;
-
-            // ---------- Helper: show message ----------
+            // Helper: show message
             function showMessage(text, type = 'success') {
                 formMessage.className = `form-message ${type}`;
                 formMessage.innerHTML = text;
             }
 
-            // ---------- Helper: clear OTP UI ----------
-            function removeOtpUI() {
-                const existing = document.getElementById('otpSection');
-                if (existing) existing.remove();
-                if (resendTimerInterval) clearInterval(resendTimerInterval);
-            }
-
-            // ---------- Generate random 6-digit OTP ----------
-            function generateOtp() {
-                  return Math.floor(100000 + Math.random() * 900000).toString();
-            }
-
-            // ---------- Send OTP via your backend (PHPMailer) ----------
-            async function sendOtpEmail(email, otp) {
-            const response = await fetch('send-otp.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, otp })
-                });
-                const data = await response.json();
-                if (!data.success) {
-                    throw new Error(data.error || 'Failed to send OTP email');
-                }
-                return data;
-            }
-
-            // ---------- Create OTP input section ----------
-            function createOtpSection() {
-                removeOtpUI();
-                const section = document.createElement('div');
-                section.id = 'otpSection';
-                section.className = 'otp-container';
-                section.innerHTML = `
-                    <p style="color: #ccc; text-align: center;">Enter the 6‑digit code sent to your email</p>
-                    <div class="otp-inputs" id="otpInputs">
-                        ${Array(6).fill(0).map(() => '<input type="text" maxlength="1" class="otp-box" inputmode="numeric" pattern="[0-9]*">').join('')}
-                    </div>
-                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
-                        <button type="button" id="verifyOtpBtn" class="signup-btn" style="flex:1;">Verify OTP</button>
-                        <button type="button" id="resendOtpBtn" class="signup-btn" style="flex:1; background:transparent; border:1px solid #e2b974;">Resend OTP</button>
-                    </div>
-                    <div style="text-align: center; margin-top: 10px;">
-                        <span class="resend-timer" id="resendTimer">Resend code in ${RESEND_COOLDOWN} seconds</span>
-                    </div>
-                `;
-                form.parentNode.insertBefore(section, form.nextSibling);
-
-                const otpBoxes = document.querySelectorAll('.otp-box');
-                otpBoxes.forEach((box, idx) => {
-                    box.addEventListener('input', (e) => {
-                        e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                        if (e.target.value.length === 1 && idx < 5) otpBoxes[idx + 1].focus();
-                    });
-                    box.addEventListener('keydown', (e) => {
-                        if (e.key === 'Backspace' && !e.target.value && idx > 0) otpBoxes[idx - 1].focus();
-                    });
-                });
-
-                document.getElementById('otpInputs').addEventListener('paste', (e) => {
-                    e.preventDefault();
-                    const paste = (e.clipboardData || window.clipboardData).getData('text');
-                    if (/^\d{6}$/.test(paste)) {
-                        otpBoxes.forEach((box, i) => box.value = paste[i]);
-                        otpBoxes[5].focus();
-                    }
-                });
-
-                document.getElementById('verifyOtpBtn').addEventListener('click', verifyOtp);
-
-                const resendBtn = document.getElementById('resendOtpBtn');
-                const timerSpan = document.getElementById('resendTimer');
-                let seconds = RESEND_COOLDOWN;
-
-                function updateTimer() {
-                    timerSpan.textContent = `Resend code in ${seconds} seconds`;
-                    timerSpan.classList.add('disabled');
-                    resendBtn.disabled = true;
-                }
-
-                function resetTimer() {
-                    if (resendTimerInterval) clearInterval(resendTimerInterval);
-                    seconds = RESEND_COOLDOWN;
-                    updateTimer();
-                    resendTimerInterval = setInterval(() => {
-                        seconds--;
-                        if (seconds <= 0) {
-                            clearInterval(resendTimerInterval);
-                            resendTimerInterval = null;
-                            timerSpan.textContent = 'Resend code';
-                            timerSpan.classList.remove('disabled');
-                            resendBtn.disabled = false;
-                        } else {
-                            updateTimer();
-                        }
-                    }, 1000);
-                }
-
-                resetTimer();
-
-                resendBtn.addEventListener('click', async () => {
-                    if (resendBtn.disabled) return;
-                    resendBtn.disabled = true;
-                    try {
-                        // Generate new OTP and send it
-                        const newOtp = generateOtp();
-                        pendingOtp = newOtp;
-                        await sendOtpEmail(pendingEmail, newOtp);
-                        showMessage(`A new OTP has been sent to ${pendingEmail}.`, 'success');
-                        resetTimer();
-                    } catch (err) {
-                        showMessage(err.message, 'error');
-                        resendBtn.disabled = false;
-                    }
-                });
-            }
-
-            // ---------- Verify OTP ----------
-            async function verifyOtp() {
-
-                const otpBoxes = document.querySelectorAll('.otp-box');
-                const token = Array.from(otpBoxes).map(b => b.value).join('');
-                if (token.length !== 6) {
-                    showMessage('Please enter the complete 6‑digit OTP.', 'error');
+            // Handle form submit
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (!form.checkValidity()) {
+                    form.reportValidity();
                     return;
                 }
 
-                const verifyBtn = document.getElementById('verifyOtpBtn');
-                verifyBtn.disabled = true;
-                verifyBtn.textContent = 'Verifying...';
+                // Get form data
+                const email = document.querySelector('input[name="email"]').value;
+                const password = document.querySelector('input[name="password"]').value;
+                const firstName = document.querySelector('input[name="first_name"]').value;
+                const lastName = document.querySelector('input[name="last_name"]').value;
+                const referralCode = document.querySelector('input[name="referral_code"]').value;
+
+                signupBtn.disabled = true;
+                signupBtn.textContent = 'Creating account...';
 
                 try {
-                    const response = await fetch('verify-otp.php', {
+                    // Register with Supabase
+                    const { data, error } = await supabase.auth.signUp({
+                        email,
+                        password,
+                        options: { 
+                            data: { 
+                                first_name: firstName, 
+                                last_name: lastName, 
+                                referral_code: referralCode,
+                                email_verified: false
+                            }
+                        }
+                    });
+
+                    if (error) throw error;
+
+                    // Generate OTP
+                    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+
+                    // Send OTP email
+                    const response = await fetch('send-otp.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            email: pendingEmail,
-                            otp: token,
-                            first_name: document.querySelector('input[name="first_name"]').value,
-                            last_name: document.querySelector('input[name="last_name"]').value,
-                            referral_code: document.querySelector('input[name="referral_code"]').value
+                        body: JSON.stringify({ 
+                            email: email, 
+                            otp: generatedOtp,
+                            firstName: firstName,
+                            lastName: lastName
                         })
                     });
-                    const data = await response.json();
-                    if (!data.success) throw new Error(data.error);
 
-                    showMessage('✅ Email verified! Redirecting to login...', 'success');
-                    form.reset();
-                    removeOtpUI();
-                    signupBtn.disabled = false;
-                    signupBtn.textContent = 'Sign Up';
-                    setTimeout(() => window.location.href = 'login-mock.php', 2000);
+                    const mailResult = await response.json();
+
+                    if (mailResult.success) {
+                        // Store registration data in session storage for verification page
+                        sessionStorage.setItem('pending_email', email);
+                        sessionStorage.setItem('pending_otp', generatedOtp);
+                        sessionStorage.setItem('pending_user_data', JSON.stringify({
+                            first_name: firstName,
+                            last_name: lastName,
+                            referral_code: referralCode
+                        }));
+                        
+                        // Redirect to verification page
+                        window.location.href = 'verification.php?email=' + encodeURIComponent(email);
+                    } else {
+                        throw new Error(mailResult.error || 'Failed to send verification email.');
+                    }
+
                 } catch (err) {
                     showMessage(err.message, 'error');
-                    verifyBtn.disabled = false;
-                    verifyBtn.textContent = 'Verify OTP';
+                    signupBtn.disabled = false;
+                    signupBtn.textContent = 'Sign Up';
                 }
-            }
+            });
 
-            // ---------- Handle form submit (sign up) ----------
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-
-            // 1. Define variables at the start of the scope
-            const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-            const email = document.querySelector('input[name="email"]').value;
-            const password = document.querySelector('input[name="password"]').value;
-            const firstName = document.querySelector('input[name="first_name"]').value;
-            const lastName = document.querySelector('input[name="last_name"]').value;
-            const referralCode = document.querySelector('input[name="referral_code"]').value;
-
-            signupBtn.disabled = true;
-            signupBtn.textContent = 'Creating account...';
-
-            try {
-                // 2. Register with Supabase (Email confirmations must be OFF in Supabase Dashboard)
-                const { data, error } = await supabase.auth.signUp({
-                    email,
-                    password,
-                    options: { 
-                        data: { first_name: firstName, last_name: lastName, referral_code: referralCode }
+            // Google registration
+            document.getElementById('googleRegister').addEventListener('click', async () => {
+                const { error } = await supabase.auth.signInWithOAuth({ 
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin + '/verification.php'
                     }
                 });
-
-                if (error) throw error; 
-
-                // 3. Call your custom PHP Mailer using the relative path
-                const response = await fetch('./send-otp.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        email: email, 
-                        otp: generatedOtp 
-                    })
-                });
-
-                const mailResult = await response.json();
-
-                if (mailResult.success) {
-                    // 4. ONLY redirect if the email was successfully sent
-                    window.location.href = 'verification.php?email=' + encodeURIComponent(email);
-                } else {
-                    throw new Error(mailResult.error || 'Account created, but failed to send OTP.');
-                }
-
-            } catch (err) {
-                // If the user already exists, Supabase returns 422
-                showMessage(err.message, 'error');
-                signupBtn.disabled = false;
-                signupBtn.textContent = 'Sign Up';
-            }
-        });
-    })();
-</script>
+                if (error) console.error(error);
+            });
+        })();
+    </script>
 </body>
 </html>
