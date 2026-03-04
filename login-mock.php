@@ -17,8 +17,8 @@ $verified = $_GET['verified'] ?? false;
         .form-message.success { background-color: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); display: block; }
         .form-message.error { background-color: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); display: block; }
         .verification-banner {
-            background: rgba(226,185,116,0.15);
-            border: 1px solid rgba(226,185,116,0.3);
+            background: rgba(122, 221, 83, 0.15);
+            border: 1px solid rgba(58, 184, 8, 0.3);
             color: #2ecc71;
             padding: 15px;
             border-radius: 8px;
