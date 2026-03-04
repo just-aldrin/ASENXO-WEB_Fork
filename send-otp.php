@@ -10,7 +10,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 // Database configuration - UPDATED HOST
-$db_host = 'dost.asenxo@gmail.com'; // Corrected host
+$db_host = 'db.hmxrblblcpbikkxcwwni.supabase.co'; // Corrected host
 $db_name = 'postgres';
 $db_user = 'postgres';
 $db_pass = 'qkoczbdhdfcmqnoi';
