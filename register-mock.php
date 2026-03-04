@@ -125,7 +125,14 @@ session_start();
         // Supabase client - CORRECT URL
         const SUPABASE_URL = 'https://hmxrblblcpbikkxcwwni.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            global: {
+                headers: {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                }
+            }
+            });;
 
         // DOM elements
         const form = document.getElementById('registerForm');
@@ -200,10 +207,14 @@ session_start();
         }
 
         // Handle form submit
-        // register-mock.php (Update this section)
-form.addEventListener('submit', async (e) => {
+   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
     const email = document.querySelector('input[name="email"]').value;
     const password = document.querySelector('input[name="password"]').value;
     const firstName = document.querySelector('input[name="first_name"]').value;
@@ -215,7 +226,7 @@ form.addEventListener('submit', async (e) => {
 
     try {
         // 1. Register with Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        const { data, error: authError } = await supabase.auth.signUp({
             email,
             password,
             options: { 
@@ -225,11 +236,11 @@ form.addEventListener('submit', async (e) => {
 
         if (authError) throw authError;
 
-        // 2. Generate OTP and Expiry (10 minutes)
+        // 2. Generate OTP and Expiry
         const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date(Date.now() + 10 * 60000).toISOString();
 
-        // 3. CRITICAL: Save OTP to the DATABASE table
+        // 3. Store in Database (Crucial for verification.php)
         const { error: dbError } = await supabase
             .from('email_verifications')
             .upsert({ 
@@ -239,12 +250,9 @@ form.addEventListener('submit', async (e) => {
                 attempts: 0 
             }, { onConflict: 'email' });
 
-        if (dbError) {
-            console.error('Database Error:', dbError);
-            throw new Error('Failed to save verification code. Please try again.');
-        }
+        if (dbError) throw dbError;
 
-        // 4. Send the Email
+        // 4. Send the Email via PHP
         try {
             await fetch('send-otp.php', {
                 method: 'POST',
@@ -256,16 +264,16 @@ form.addEventListener('submit', async (e) => {
                 })
             });
         } catch (emailErr) {
-            console.warn('Email delivery failed, but code is in DB:', emailErr);
+            console.warn('Email fetch failed, but code is in DB.');
         }
 
-        // 5. Success UI and Redirect
-        alert(`Your verification code is: ${generatedOtp}`);
-        showMessage('Account created! Redirecting to verification...', 'success');
+        // 5. Update UI (Green box, No Modal)
+        showMessage('✅ Email Sent! Please check your Email.', 'success');
         
+        // 6. Redirect after short delay
         setTimeout(() => {
             window.location.href = 'verification.php?email=' + encodeURIComponent(email);
-        }, 1500);
+        }, 2000);
 
     } catch (err) {
         console.error('Registration error:', err);
