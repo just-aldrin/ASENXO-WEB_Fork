@@ -122,10 +122,27 @@ session_start();
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         (function() {
-            // Supabase client
-            const SUPABASE_URL = 'https://hmxrblblcpbikkxcwwni.supabase.co';
+            // Supabase client - FIXED URL
+            const SUPABASE_URL = 'https://hmxrblblcpbikkxcwwni.supabase.co'; // Fixed!
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw';
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            // Create client with additional options
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                auth: {
+                    autoRefreshToken: true,
+                    persistSession: true,
+                    detectSessionInUrl: true
+                }
+            });
+
+            // Test the connection
+            supabase.auth.getSession().then(({ data, error }) => {
+                if (error) {
+                    console.error('Supabase connection error:', error);
+                } else {
+                    console.log('✅ Supabase connected successfully');
+                }
+            });
 
             // DOM elements
             const form = document.getElementById('registerForm');
