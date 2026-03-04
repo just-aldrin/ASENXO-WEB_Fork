@@ -1,6 +1,6 @@
 <?php
 // test-db.php
-$db_host = 'db.hmxrbbllcbpkkksxwwni.supabase.co';
+$db_host = 'dost.asenxo@gmail.com';
 $db_name = 'postgres';
 $db_user = 'postgres';
 $db_pass = 'qkoczbdhdfcmqnoi';

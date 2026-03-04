@@ -1,6 +1,6 @@
 <?php
 
-$host = 'https://hmxrblblcpbikkxcwwni.supabase.co';  // e.g., db.abcdefghijklm.supabase.co
+$host = 'dost.asenxo@gmail.com';  // e.g., db.abcdefghijklm.supabase.co
 $port = '5432';
 $dbname = 'postgres';        // Default database name (or your custom name)
 $username = 'postgres';       // Default user
