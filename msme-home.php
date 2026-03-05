@@ -84,42 +84,42 @@
   let currentUser = null;
   let currentStep = 2;
 
+  // Updated to use your 'user_profiles' table
   async function init() {
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) { window.location.href = 'login-mock.php'; return; }
-  
-  currentUser = user;
-  document.getElementById('userEmailDisplay').innerText = user.email;
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) { window.location.href = 'login-mock.php'; return; }
+    
+    currentUser = user;
 
-  // Attempt to fetch profile
-  let { data: profile, error: fetchError } = await supabaseClient
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
-
-  // If profile doesn't exist or RLS blocked it, try to create it
-  if (!profile || fetchError) {
-    console.log("No profile found, attempting to create one...");
-    const { data: newProfile, error: insertError } = await supabaseClient
-      .from('profiles')
-      .insert([{ id: user.id, email: user.email, current_step: 2 }])
-      .select()
+    // Fetch from user_profiles to get first_name and last_name
+    let { data: profile, error } = await supabaseClient
+      .from('user_profiles')
+      .select('first_name, last_name, current_step')
+      .eq('id', user.id)
       .single();
 
-    if (insertError) {
-      console.error("Critical: Could not create profile. Check RLS policies.", insertError);
-      document.getElementById('activeStepForm').innerHTML = "<h3>Permission Error</h3><p>Please ensure RLS policies are set in Supabase.</p>";
-      return; // Stop here so it doesn't crash on the next line
+    if (profile) {
+      // Display the real name in the header
+      document.getElementById('userEmailDisplay').innerText = `${profile.first_name} ${profile.last_name}`;
+      currentStep = profile.current_step || 2;
+      updateDashboardUI();
+    } else {
+      console.error("Profile not found in user_profiles table.");
+      document.getElementById('userEmailDisplay').innerText = user.email;
     }
-    profile = newProfile;
   }
 
-  // Now it's safe to read current_step
-  currentStep = profile.current_step;
-  updateDashboardUI();
-}
-
+  async function moveNext() {
+    currentStep++;
+    // Update the existing user_profiles table
+    await supabaseClient
+      .from('user_profiles')
+      .update({ current_step: currentStep })
+      .eq('id', currentUser.id);
+    
+    updateDashboardUI();
+  }
+  
   function renderCurrentForm() {
     const container = document.getElementById('activeStepForm');
     
