@@ -89,7 +89,7 @@
     .repo-item { padding: 15px; background: rgba(128,128,128,0.05); border-radius: 10px; text-align: center; border: 1px solid var(--border-color); }
 
     .matrix-input {
-  width: 100%;
+  width: 80%;
   background: var(--input-bg) !important;
   border: 1px solid var(--border-color);
   color: var(--text-main);
