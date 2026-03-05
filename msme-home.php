@@ -85,39 +85,40 @@
   let currentStep = 2;
 
   async function init() {
-    // 1. Check Auth
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) { window.location.href = 'login-mock.php'; return; }
-    currentUser = user;
-    document.getElementById('userEmailDisplay').innerText = user.email;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) { window.location.href = 'login-mock.php'; return; }
+  
+  currentUser = user;
+  document.getElementById('userEmailDisplay').innerText = user.email;
 
-    // 2. Fetch or Create Profile Progress
-    let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
-    if (!profile) {
-      const { data: newProfile } = await supabaseClient.from('profiles').insert([{ id: user.id, email: user.email, current_step: 2 }]).select().single();
-      profile = newProfile;
+  // Attempt to fetch profile
+  let { data: profile, error: fetchError } = await supabaseClient
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  // If profile doesn't exist or RLS blocked it, try to create it
+  if (!profile || fetchError) {
+    console.log("No profile found, attempting to create one...");
+    const { data: newProfile, error: insertError } = await supabaseClient
+      .from('profiles')
+      .insert([{ id: user.id, email: user.email, current_step: 2 }])
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error("Critical: Could not create profile. Check RLS policies.", insertError);
+      document.getElementById('activeStepForm').innerHTML = "<h3>Permission Error</h3><p>Please ensure RLS policies are set in Supabase.</p>";
+      return; // Stop here so it doesn't crash on the next line
     }
-
-    currentStep = profile.current_step;
-    updateDashboardUI();
+    profile = newProfile;
   }
 
-  function updateDashboardUI() {
-    // Update Progress Bar (Max step is 8 for this part)
-    const percent = Math.round((currentStep / 8) * 100);
-    document.getElementById('progressBar').style.width = percent + '%';
-    document.getElementById('progressPercent').innerText = percent + '%';
-
-    // Highlight Sidebar
-    document.querySelectorAll('#sidebarSteps li').forEach(li => {
-      const step = parseInt(li.dataset.step);
-      li.classList.remove('active');
-      if (step < currentStep) li.style.color = '#4ade80'; // Green for finished
-      if (step === currentStep) li.classList.add('active');
-    });
-
-    renderCurrentForm();
-  }
+  // Now it's safe to read current_step
+  currentStep = profile.current_step;
+  updateDashboardUI();
+}
 
   function renderCurrentForm() {
     const container = document.getElementById('activeStepForm');
