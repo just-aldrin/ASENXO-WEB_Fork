@@ -2,217 +2,151 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ASENXO | MSME Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="src/css/msme-home-style.css">
   <style>
-    :root { --accent: #2ecc71; --card: #1a1a1a; }
+    :root { --accent: #2ecc71; --bg: #0d0d0d; --card: #1a1a1a; }
+    body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; font-size: 12px; }
     
-    /* 1. COMPACT SIDEBAR */
-    .user-profile-box { padding: 6px 10px; border-bottom: 1px solid #333; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-    .user-avatar { width: 26px; height: 26px; background: var(--accent); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; }
-    .user-name-sidebar { font-weight: 600; font-size: 10px; color: white; }
-
-    /* 2. COMPACT STEPPER (The "Squeeze") */
-    .step-list { list-style: none; padding: 0; margin: 0; }
-    .step-item { background: var(--card); border: 1px solid #333; border-radius: 6px; margin-bottom: 4px; overflow: hidden; }
-    .step-header { padding: 4px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
-    .step-icon { width: 18px; height: 18px; border-radius: 50%; background: #262626; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 8px; color: #555; }
-    
-    .step-item.active { border-color: var(--accent); background: #1c1c1c; }
+    /* Ultra-Compact Stepper */
+    .step-list { list-style: none; padding: 0; max-width: 600px; margin: 0 auto; }
+    .step-item { background: var(--card); border: 1px solid #333; border-radius: 4px; margin-bottom: 3px; overflow: hidden; }
+    .step-header { padding: 4px 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .step-icon { width: 16px; height: 16px; border-radius: 50%; background: #262626; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #555; }
+    .step-item.active { border-color: var(--accent); }
     .step-item.active .step-icon { background: var(--accent); color: white; }
-    .step-item.completed .step-icon { background: var(--accent); color: white; }
     
-    .step-title { font-weight: 600; font-size: 10.5px; line-height: 1.1; }
-    .step-desc { font-size: 8.5px; color: #666; display: block; margin-top: 1px; }
-
-    /* 3. STEP CONTENT & DENSE FORM */
-    .step-content { display: none; padding: 6px 10px 10px 38px; border-top: 1px solid #262626; }
+    .step-title { font-weight: 700; font-size: 10px; }
+    .step-desc { font-size: 8px; color: #666; display: block; }
+    
+    .step-content { display: none; padding: 8px 10px 10px 34px; border-top: 1px solid #262626; }
     .step-item.active .step-content { display: block; }
 
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-    .input-group { margin-bottom: 2px; }
-    .input-group label { display: block; font-size: 7.5px; color: #777; margin-bottom: 0px; text-transform: uppercase; font-weight: 800; }
-    .input-group input, .input-group select { width: 100%; padding: 4px 8px; background: #000; border: 1px solid #333; color: white; border-radius: 3px; font-size: 10px; }
-    .input-group input:disabled { opacity: 0.4; border-style: dashed; }
+    /* High Density Form */
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    label { font-size: 7px; color: #888; text-transform: uppercase; font-weight: 800; display: block; }
+    input { width: 100%; padding: 3px 6px; background: #000; border: 1px solid #333; color: white; border-radius: 2px; font-size: 10px; box-sizing: border-box; }
+    input:disabled { opacity: 0.4; }
     
-    /* 4. BUTTON & SPINNER */
-    .primary-btn { background: var(--accent); color: white; border: none; padding: 6px; border-radius: 3px; cursor: pointer; width: 100%; font-weight: 700; margin-top: 5px; font-size: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .spinner { animation: rotate 1s linear infinite; display: none; font-size: 9px; }
-    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .btn { background: var(--accent); color: white; border: none; padding: 5px; border-radius: 3px; width: 100%; font-weight: 700; font-size: 10px; cursor: pointer; margin-top: 5px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .fa-spin { display: none; }
   </style>
 </head>
-<body class="dark">
-<div class="app">
-  <div class="top-header">
-    <div class="top-header-left">
-      <span class="project-name">ASENXO Project</span>
-      <span class="badge production">PRODUCTION</span>
-    </div>
-    <div class="top-header-right">
-      <button id="logoutBtn" style="background:#ef4444; color:white; border:none; padding:3px 8px; border-radius:4px; font-size:9px; cursor:pointer;">Logout</button>
-    </div>
-  </div>
+<body>
 
-  <div class="content-row">
-    <div class="sidebar">
-      <div class="user-profile-box">
-        <div class="user-avatar"><i class="fas fa-user"></i></div>
-        <div class="user-info-text"><span id="sidebarUserName" class="user-name-sidebar">...</span></div>
-      </div>
-      <ul class="sidebar-menu"><li class="active"><a><i class="fas fa-home"></i> Dashboard</a></li></ul>
-    </div>
-
-    <div class="main-content">
-      <div class="progress-column">
-        <ul class="step-list" id="middleStepList"></ul>
-      </div>
-
-      <div class="info-column">
-        <div class="card" style="padding:10px; background:var(--card); border:1px solid #333; border-radius:8px;">
-          <div style="font-size:9px; color:#777; font-weight:800; text-transform:uppercase; margin-bottom:5px;">Progress</div>
-          <div id="progressPercent" style="font-size:12px; font-weight:700; color:white;">0%</div>
-          <div class="progress-bar-bg" style="height:4px; background:#262626; border-radius:2px; margin-top:4px;">
-            <div class="progress-bar-fill" id="progressBar" style="width:0%; height:100%; background:var(--accent); border-radius:2px;"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="step-list" id="stepper">
+  <div style="text-align: center; color: #444;">Initializing Supabase Connection...</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // --- CONFIGURATION (Ensure these are pasted correctly) ---
-  const URL = 'https://hmxrblblcpbikkxcwwni.supabase.co';
-  const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw'; 
+  // 1. HARDCODED CONFIG (Double check these in Supabase Settings > API)
+  const SB_URL = 'https://hmxrblblcpbikkxcwwni.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw'; // <--- PASTE AGAIN, CAREFULLY
 
-  let supabaseClient = null;
-  let currentUser = null;
-  let cachedProfile = null;
-  let currentStep = 2;
+  let supabase;
+  let user = null;
+  let profile = null;
+  let step = 3; // Starting at step 3 for testing
 
-  const steps = [
-    { id: 1, title: "Account Selection", desc: "Type chosen" },
-    { id: 2, title: "Email Verification", desc: "Security check" },
-    { id: 3, title: "Owner Information", desc: "Detailed profile data" },
-    { id: 4, title: "Profile Image", desc: "Identity photo" },
-    { id: 5, title: "Business Information", desc: "TIN & Registration" },
-    { id: 6, title: "Document Upload", desc: "Permits & Files" }
-  ];
-
-  async function init() {
+  async function start() {
     try {
-      // Initialize with redundant key-passing to fix the "No API Key" error
-      supabaseClient = supabase.createClient(URL, KEY, {
+      // FORCE HEADERS: This is the "Nuclear" part to fix the apikey error
+      supabase = supabase.createClient(SB_URL, SB_KEY, {
         global: {
-          headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}` }
+          headers: {
+            'apikey': SB_KEY,
+            'Authorization': `Bearer ${SB_KEY}`
+          }
         }
       });
 
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) { window.location.href = 'login.php'; return; }
-      currentUser = user;
+      // Test Connection
+      const { data, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      user = data.user;
 
-      const { data: profile } = await supabaseClient.from('user_profiles').select('*').eq('id', user.id).single();
-      if (profile) {
-        cachedProfile = profile;
-        document.getElementById('sidebarUserName').innerText = `${profile.first_name} ${profile.last_name}`;
-        currentStep = profile.current_step || 2;
-        refreshUI();
-      }
-    } catch (err) { console.error("Initialization failed:", err); }
+      // Get Profile
+      const { data: p } = await supabase.from('user_profiles').select('*').eq('id', user.id).single();
+      profile = p;
+      step = p.current_step || 3;
+
+      render();
+    } catch (err) {
+      document.getElementById('stepper').innerHTML = `
+        <div style="background:#441111; padding:10px; border-radius:4px; border:1px solid red;">
+          <strong style="color:red">CONNECTION ERROR:</strong><br>
+          <code style="font-size:10px">${err.message}</code><br><br>
+          <small>Tip: Check CORS settings and ensure the API key has no spaces.</small>
+        </div>`;
+    }
   }
 
-  function refreshUI() {
-    const p = Math.round((currentStep / steps.length) * 100);
-    document.getElementById('progressBar').style.width = p + '%';
-    document.getElementById('progressPercent').innerText = p + '%';
-    
-    document.getElementById('middleStepList').innerHTML = steps.map(s => {
-      const active = s.id === currentStep;
-      const done = s.id < currentStep;
-      return `
-        <li class="step-item ${active ? 'active' : ''} ${done ? 'completed' : ''}">
-          <div class="step-header">
-            <div class="step-icon">${done ? '<i class="fas fa-check"></i>' : s.id}</div>
-            <div>
-              <div class="step-title" style="color:${done ? 'var(--accent)' : 'white'}">${s.title}</div>
-              <span class="step-desc">${s.desc}</span>
-            </div>
+  function render() {
+    const steps = [
+      { id: 1, t: "Account", d: "Entity choice" },
+      { id: 2, t: "Verification", d: "Email checked" },
+      { id: 3, t: "Owner Profile", d: "Personal details" }
+    ];
+
+    document.getElementById('stepper').innerHTML = steps.map(s => `
+      <div class="step-item ${s.id === step ? 'active' : ''}">
+        <div class="step-header">
+          <div class="step-icon">${s.id < step ? '✓' : s.id}</div>
+          <div>
+            <div class="step-title">${s.t}</div>
+            <span class="step-desc">${s.d}</span>
           </div>
-          <div class="step-content">${getForm(s.id)}</div>
-        </li>`;
-    }).join('');
+        </div>
+        <div class="step-content">${getForm(s.id)}</div>
+      </div>
+    `).join('');
   }
 
   function getForm(id) {
-    if (id === 2) return `<button class="primary-btn" onclick="moveNext()">Verify Now</button>`;
-    if (id === 3 && cachedProfile) {
+    if (id === 3 && profile) {
       return `
-      <div class="form-grid">
-        <div class="input-group"><label>Owner ID</label><input type="text" value="${currentUser.id}" disabled></div>
-        <div class="input-group"><label>Full Name</label><input type="text" value="${cachedProfile.first_name} ${cachedProfile.last_name}" disabled></div>
-        <div class="input-group"><label>Nickname</label><input type="text" id="o_nick"></div>
-        <div class="input-group"><label>DOB</label><input type="date" id="o_dob"></div>
-        <div class="input-group"><label>Place of Birth</label><input type="text" id="o_pob"></div>
-        <div class="input-group"><label>Nationality</label><input type="text" id="o_nat"></div>
-        <div class="input-group"><label>Sex</label><select id="o_sex"><option>Male</option><option>Female</option></select></div>
-        <div class="input-group"><label>Marital Status</label><input type="text" id="o_marstat"></div>
-        <div class="input-group"><label>Spouse Name</label><input type="text" id="o_spouse"></div>
-        <div class="input-group"><label>Contact</label><input type="text" id="o_phone"></div>
-        <div class="input-group" style="grid-column: span 2;"><label>Full Address</label><input type="text" id="o_addr"></div>
-        <div class="input-group"><label>Email</label><input type="text" value="${currentUser.email}" disabled></div>
-        <div class="input-group"><label>Enterprise</label><input type="text" id="e_name"></div>
-        <div class="input-group"><label>Designation</label><input type="text" id="e_desig"></div>
-        <div class="input-group"><label>Affiliations</label><input type="text" id="o_aff"></div>
-        <div class="input-group"><label>Education</label><input type="text" id="o_hea"></div>
-      </div>
-      <button class="primary-btn" id="saveBtn" onclick="save()">
-        <i class="fas fa-circle-notch spinner" id="spin"></i> <span>Save Profile</span>
-      </button>`;
+        <div class="grid">
+          <div><label>Name</label><input id="f_name" value="${profile.first_name} ${profile.last_name}" disabled></div>
+          <div><label>Nickname</label><input id="f_nick"></div>
+          <div><label>Phone</label><input id="f_phone"></div>
+          <div><label>Address</label><input id="f_addr"></div>
+        </div>
+        <button class="btn" id="saveBtn" onclick="saveData()">
+          <i class="fas fa-circle-notch fa-spin" id="loader"></i>
+          <span>Save Profile</span>
+        </button>
+      `;
     }
-    return `<p style="font-size:8px; color:#444;">Locked.</p>`;
+    return `<p style="color:#444">Step completed or locked.</p>`;
   }
 
-  async function save() {
-    const btn = document.getElementById('saveBtn');
-    const spin = document.getElementById('spin');
-    btn.disabled = true; spin.style.display = 'inline-block';
+  async function saveData() {
+    const b = document.getElementById('saveBtn');
+    const l = document.getElementById('loader');
+    b.disabled = true; l.style.display = 'inline-block';
 
-    const d = {
-      owner_ID: currentUser.id,
-      owner_name: cachedProfile.first_name + ' ' + cachedProfile.last_name,
-      owner_nickname: document.getElementById('o_nick').value,
-      owner_dob: document.getElementById('o_dob').value,
-      owner_pob: document.getElementById('o_pob').value,
-      owner_nationality: document.getElementById('o_nat').value,
-      owner_sex: document.getElementById('o_sex').value,
-      owner_marstat: document.getElementById('o_marstat').value,
-      owner_spouse: document.getElementById('o_spouse').value,
-      owner_contactnum: document.getElementById('o_phone').value,
-      owner_address: document.getElementById('o_addr').value,
-      owner_email: currentUser.email,
-      enterprise_name: document.getElementById('e_name').value,
-      enterprise_designation: document.getElementById('e_desig').value,
-      owner_affiliations: document.getElementById('o_aff').value,
-      owner_hea: document.getElementById('o_hea').value
+    const payload = {
+      owner_ID: user.id,
+      owner_name: document.getElementById('f_name').value,
+      owner_nickname: document.getElementById('f_nick').value,
+      owner_contactnum: document.getElementById('f_phone').value,
+      owner_address: document.getElementById('f_addr').value
     };
 
-    const { error } = await supabaseClient.from('owner_profile').upsert([d]);
-    if (!error) moveNext();
-    else { alert(error.message); btn.disabled = false; spin.style.display = 'none'; }
+    const { error } = await supabase.from('owner_profile').upsert(payload);
+
+    if (!error) {
+      step++;
+      render();
+    } else {
+      alert("Error saving: " + error.message);
+      b.disabled = false; l.style.display = 'none';
+    }
   }
 
-  async function moveNext() {
-    currentStep++;
-    await supabaseClient.from('user_profiles').update({ current_step: currentStep }).eq('id', currentUser.id);
-    refreshUI();
-  }
-
-  document.addEventListener('DOMContentLoaded', init);
+  window.onload = start;
 </script>
+
 </body>
 </html>
