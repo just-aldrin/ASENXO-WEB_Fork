@@ -305,7 +305,7 @@
       enterprise_lat: parseFloat(document.getElementById('c_lat').value) || 0, // Added Latitude
       enterprise_long: parseFloat(document.getElementById('c_long').value) || 0, // Added Longitude
       contact_person: document.getElementById('c_cp').value,
-      email: document.getElementById('c_email').value,
+      enterprise_email: document.getElementById('c_email').value,
       year_established: parseInt(document.getElementById('c_year').value) || 0,
       current_capitalization: parseFloat(document.getElementById('c_cap').value) || 0,
       organization_type: document.getElementById('c_org').value,
@@ -331,7 +331,7 @@
       btn.innerText = "Save & Continue";
     }
   }
-  
+
   async function moveNext() {
     currentStep++;
     await sb.from('user_profiles').update({ current_step: currentStep }).eq('id', user.id);
