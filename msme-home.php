@@ -139,7 +139,7 @@
   async function init() {
     try {
       // THE FIX: Header injection
-      supabase = supabase.createClient(URL, KEY, {
+      supabaseClient = supabase.createClient(URL, KEY, {
         global: { headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}` } }
       });
 
