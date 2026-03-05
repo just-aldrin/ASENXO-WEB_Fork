@@ -38,7 +38,6 @@
       overflow-x: hidden;
     }
 
-    /* Fixed Centering for Icons */
     .step-icon {
       display: flex !important;
       align-items: center;
@@ -50,7 +49,6 @@
     .step-icon.completed { background: var(--accent); color: #000; }
     .step-icon.current { background: transparent; border: 2px solid var(--accent); color: var(--accent); }
 
-    /* Layout & Sidebar */
     .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; margin-bottom: 20px; }
     
     .sidebar-menu { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
@@ -69,7 +67,6 @@
     .sidebar-menu li.active { background: rgba(46, 204, 113, 0.1); color: var(--accent); font-weight: 700; }
     .sidebar-menu li:hover:not(.active) { background: rgba(255,255,255,0.03); color: var(--text-main); }
 
-    /* Form UI */
     .input-group label { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px; display: block; }
     .input-group input, .input-group select {
       width: 100%; background: var(--input-bg); border: 1px solid var(--border-color);
@@ -107,7 +104,6 @@
 
   <div style="display: flex; height: calc(100vh - 60px);">
     <nav style="width: 260px; border-right: 1px solid var(--border-color); padding: 20px; display: flex; flex-direction: column; justify-content: space-between; background: var(--bg-body);">
-      
       <div>
         <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 15px; padding-left: 10px; letter-spacing: 0.5px;">MSME DASHBOARD</div>
         <ul class="sidebar-menu">
@@ -151,28 +147,13 @@
             </div>
           </div>
         </div>
-
-        <div class="card">
-          <h3 style="margin-top: 0; font-size: 14px; font-weight: 800;">File Repository</h3>
-          <div class="repo-grid">
-            <div class="repo-item">
-              <span id="filesUploaded" style="font-size: 20px; font-weight: 800; display: block; color: var(--accent);">0</span>
-              <span style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Uploaded</span>
-            </div>
-            <div class="repo-item">
-              <span id="filesPending" style="font-size: 20px; font-weight: 800; display: block; color:#f1c40f">0</span>
-              <span style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Pending Review</span>
-            </div>
-          </div>
-        </div>
-      </aside>
+        </aside>
     </main>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // MUST REPLACE WITH YOUR KEYS
   const S_URL = 'https://hmxrblblcpbikkxcwwni.supabase.co';
   const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw'; 
   const sb = supabase.createClient(S_URL, S_KEY);
@@ -184,8 +165,15 @@
   const stepsData = [
     { id: 1, title: "Account Selection", desc: "Entity type chosen" },
     { id: 2, title: "Identity Security", desc: "Verify mobile & email" },
-    { id: 3, title: "Complete Your Information", desc: "Detailed owner profile" },
-    { id: 4, title: "Profile Image", desc: "Upload your photo" }
+    { id: 3, title: "Owner Information", desc: "Detailed personal data" },
+    { id: 4, title: "Profile Image", desc: "Upload profile image" },
+    { id: 5, title: "Business Information", desc: "Enterprise details" },
+    { id: 6, title: "Complete Business Information", desc: "Business details" },
+    { id: 7, title: "Account Confirmation", desc: "Review and confirm" },
+    { id: 8, title: "Submit Required Documents", desc: "PDF, images" },
+    { id: 9, title: "Application Status", desc: "Pending review" },
+    { id: 10, title: "Technology Needs Assessment", desc: "Based on survey" },
+    { id: 11, title: "Endorsement Status", desc: "Waiting for approval" }
   ];
 
   async function init() {
@@ -208,8 +196,7 @@
   }
 
   function renderSteps() {
-    const totalSteps = 6; // Matching your progress bar logic
-    const perc = Math.round((currentStep / totalSteps) * 100);
+    const perc = Math.round((currentStep / stepsData.length) * 100);
     document.getElementById('progressFill').style.width = perc + '%';
     document.getElementById('progressTxt').innerText = perc + '%';
 
@@ -228,6 +215,7 @@
             <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">${s.desc}</div>
             ${isActive && s.id === 3 ? renderOwnerForm() : ''}
             ${isActive && s.id === 4 ? renderImageForm() : ''}
+            ${isActive && s.id === 5 ? renderBusinessForm() : ''}
           </div>
         </li>
       `;
@@ -244,13 +232,6 @@
           <div class="input-group"><label>Nationality</label><input id="o_nat" value="Filipino"></div>
           <div class="input-group"><label>Sex</label><select id="o_sex"><option>Male</option><option>Female</option></select></div>
           <div class="input-group"><label>Marital status</label><select id="o_mar"><option>single</option><option>married</option></select></div>
-          <div class="input-group"><label>Spouse name</label><input id="o_spo" placeholder="who"></div>
-          <div class="input-group"><label>Contact number</label><input id="o_pho" placeholder="09123456789"></div>
-          <div class="input-group" style="grid-column: span 2;"><label>Full address</label><input id="o_adr" placeholder="Street, Brgy, City"></div>
-          <div class="input-group"><label>Enterprise name</label><input id="o_ent" placeholder="ASENXO"></div>
-          <div class="input-group"><label>Enterprise designation</label><input id="o_des" placeholder="Owner"></div>
-          <div class="input-group"><label>Affiliations</label><input id="o_aff"></div>
-          <div class="input-group"><label>Educational attainment</label><input id="o_hea"></div>
         </div>
         <button class="primary-btn" id="saveBtn" style="margin-top: 20px;" onclick="saveOwnerInfo()">Save & Continue</button>
       </div>`;
@@ -265,6 +246,117 @@
       </div>`;
   }
 
+  function renderBusinessForm() {
+    return `
+      <div style="background: rgba(128,128,128,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; margin-top: 15px;">
+        <h4 style="margin: 0 0 20px 0; font-size: 14px; color: var(--accent);">Enterprise Details</h4>
+        <div class="form-grid">
+          <div class="input-group"><label>Enterprise ID</label><input id="c_eid" placeholder="Auto-generated"></div>
+          <div class="input-group"><label>Enterprise Name</label><input id="c_name"></div>
+          <div class="input-group" style="grid-column: span 2;"><label>Enterprise Address</label><input id="c_addr"></div>
+          
+          <div class="input-group"><label>Latitude</label><input type="number" step="any" id="c_lat" placeholder="10.7202"></div>
+          <div class="input-group"><label>Longitude</label><input type="number" step="any" id="c_long" placeholder="122.5621"></div>
+          
+          <div class="input-group"><label>Contact Person</label><input id="c_cp"></div>
+          <div class="input-group"><label>Enterprise Email</label><input type="email" id="c_email"></div>
+          <div class="input-group"><label>Year Established</label><input type="number" id="c_year" value="2024"></div>
+          <div class="input-group"><label>Current Capitalization</label><input type="number" step="0.01" id="c_cap"></div>
+          <div class="input-group"><label>Organization Type</label>
+            <select id="c_org">
+              <option>Sole Proprietorship</option>
+              <option>Partnership</option>
+              <option>Corporation</option>
+            </select>
+          </div>
+          <div class="input-group"><label>Business Type</label><input id="c_btype"></div>
+          <div class="input-group"><label>MSME Type</label>
+            <select id="c_mtype">
+              <option>Micro</option>
+              <option>Small</option>
+              <option>Medium</option>
+              <option>Enterprise</option>
+            </select>
+          </div>
+          <div class="input-group"><label>Industry Sector</label><input id="c_sector"></div>
+          <div class="input-group"><label>DTI Registration No.</label><input id="c_dti"></div>
+          <div class="input-group"><label>SEC Registration No.</label><input id="c_sec"></div>
+          <div class="input-group"><label>CDA Registration No.</label><input id="c_cda"></div>
+          <div class="input-group"><label>Other</label><input id="c_other"></div>
+        </div>
+
+        <h4 style="margin: 30px 0 15px 0; font-size: 14px; color: var(--accent); border-top: 1px solid var(--border-color); padding-top: 20px;">Employment Information</h4>
+        <div class="form-grid">
+          <div class="input-group"><label>Regular Direct Employees</label><input type="number" id="c_reg" value="0"></div>
+          <div class="input-group"><label>Contractual Direct Employees</label><input type="number" id="c_con" value="0"></div>
+        </div>
+        <button class="primary-btn" id="saveBizBtn" style="margin-top: 30px;" onclick="saveBusinessInfo()">Save & Continue</button>
+      </div>`;
+  }
+
+  async function saveBusinessInfo() {
+    const btn = document.getElementById('saveBizBtn');
+    btn.disabled = true; btn.innerText = "Saving...";
+
+    const payload = {
+      user_id: user.id, 
+      enterprise_name: document.getElementById('c_name').value,
+      enterprise_address: document.getElementById('c_addr').value,
+      enterprise_lat: parseFloat(document.getElementById('c_lat').value) || 0, // Added Latitude
+      enterprise_long: parseFloat(document.getElementById('c_long').value) || 0, // Added Longitude
+      contact_person: document.getElementById('c_cp').value,
+      email: document.getElementById('c_email').value,
+      year_established: parseInt(document.getElementById('c_year').value) || 0,
+      current_capitalization: parseFloat(document.getElementById('c_cap').value) || 0,
+      organization_type: document.getElementById('c_org').value,
+      business_type: document.getElementById('c_btype').value,
+      msme_type: document.getElementById('c_mtype').value,
+      industry_sector: document.getElementById('c_sector').value,
+      DTI_reg_num: document.getElementById('c_dti').value,
+      SEC_reg_num: document.getElementById('c_sec').value,
+      CDA_reg_num: document.getElementById('c_cda').value,
+      others: document.getElementById('c_other').value,
+      regular_direct_emp: parseInt(document.getElementById('c_reg').value) || 0,
+      contractual_direct_emp: parseInt(document.getElementById('c_con').value) || 0
+    };
+
+    const { error } = await sb.from('company_profile').upsert(payload, { onConflict: 'user_id' });
+    
+    if (!error) {
+      moveNext();
+    } else {
+      console.error(error);
+      alert("Error: " + error.message);
+      btn.disabled = false;
+      btn.innerText = "Save & Continue";
+    }
+  }
+  
+  async function moveNext() {
+    currentStep++;
+    await sb.from('user_profiles').update({ current_step: currentStep }).eq('id', user.id);
+    renderSteps();
+  }
+
+  async function saveOwnerInfo() {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; 
+    const payload = {
+      owner_ID: user.id,
+      owner_name: `${profile.first_name} ${profile.last_name}`,
+      owner_nickname: document.getElementById('o_nick').value,
+      owner_dob: document.getElementById('o_dob').value,
+      owner_pob: document.getElementById('o_pob').value,
+      owner_nationality: document.getElementById('o_nat').value,
+      owner_sex: document.getElementById('o_sex').value,
+      owner_marstat: document.getElementById('o_mar').value,
+      owner_email: user.email
+    };
+    const { error } = await sb.from('owner_profile').upsert([payload]);
+    if (!error) moveNext();
+    else { alert(error.message); btn.disabled = false; }
+  }
+
   function previewImg(input) {
     if (input.files?.[0]) {
       const reader = new FileReader();
@@ -276,102 +368,17 @@
   async function uploadImg() {
     const file = document.getElementById('profileFile').files[0];
     if (!file) return alert("Select a file first");
-    
-    const btn = document.getElementById('upBtn');
-    btn.disabled = true; btn.innerText = "Uploading...";
-
     const filePath = `${user.id}/${Date.now()}_${file.name}`;
     const { data, error } = await sb.storage.from('avatars').upload(filePath, file);
-
-    if (error) { alert(error.message); btn.disabled = false; return; }
-
-    const { data: { publicUrl } } = sb.storage.from('avatars').getPublicUrl(filePath);
-    await sb.from('owner_profile').update({ profile_pic_url: publicUrl }).eq('owner_ID', user.id);
-    
-    document.getElementById('sidebarAvatar').innerHTML = `<img src="${publicUrl}" style="width:100%;height:100%;object-fit:cover;">`;
-    moveNext();
+    if (!error) {
+      const { data: { publicUrl } } = sb.storage.from('avatars').getPublicUrl(filePath);
+      await sb.from('owner_profile').update({ profile_pic_url: publicUrl }).eq('owner_ID', user.id);
+      moveNext();
+    }
   }
-
-  async function saveOwnerInfo() {
-    const btn = document.getElementById('saveBtn');
-    btn.disabled = true; btn.innerText = "Saving...";
-
-    const payload = {
-      owner_ID: user.id,
-      owner_name: `${profile.first_name} ${profile.last_name}`,
-      owner_nickname: document.getElementById('o_nick').value,
-      owner_dob: document.getElementById('o_dob').value,
-      owner_pob: document.getElementById('o_pob').value,
-      owner_nationality: document.getElementById('o_nat').value,
-      owner_sex: document.getElementById('o_sex').value,
-      owner_marstat: document.getElementById('o_mar').value,
-      owner_spouse: document.getElementById('o_spo').value,
-      owner_contactnum: document.getElementById('o_pho').value,
-      owner_address: document.getElementById('o_adr').value,
-      owner_email: user.email,
-      enterprise_name: document.getElementById('o_ent').value,
-      enterprise_designation: document.getElementById('o_des').value,
-      owner_affiliations: document.getElementById('o_aff').value,
-      owner_hea: document.getElementById('o_hea').value
-    };
-
-    const { error } = await sb.from('owner_profile').upsert([payload]);
-    if (!error) moveNext();
-    else { alert(error.message); btn.disabled = false; btn.innerText = "Save & Continue"; }
-  }
-
-  async function moveNext() {
-    currentStep++;
-    await sb.from('user_profiles').update({ current_step: currentStep }).eq('id', user.id);
-    renderSteps();
-  }
-
-  async function saveBusinessInfo() {
-  const btn = document.getElementById('saveBizBtn');
-  btn.disabled = true; 
-  btn.innerText = "Saving Enterprise Data...";
-
-  // We omit 'id' so the DB can auto-generate the int8 primary key
-  // We add 'user_id' so the RLS policy knows who owns this row
-  const payload = {
-    user_id: user.id, 
-    enterprise_name: document.getElementById('c_name').value,
-    enterprise_address: document.getElementById('c_addr').value,
-    contact_person: document.getElementById('c_cp').value,
-    email: document.getElementById('c_email').value,
-    year_established: parseInt(document.getElementById('c_year').value) || 0,
-    current_capitalization: parseFloat(document.getElementById('c_cap').value) || 0,
-    organization_type: document.getElementById('c_org').value,
-    business_type: document.getElementById('c_btype').value,
-    msme_type: document.getElementById('c_mtype').value,
-    industry_sector: document.getElementById('c_sector').value,
-    DTI_reg_num: document.getElementById('c_dti').value,
-    SEC_reg_num: document.getElementById('c_sec').value,
-    CDA_reg_num: document.getElementById('c_cda').value,
-    others: document.getElementById('c_other').value,
-    regular_direct_emp: parseInt(document.getElementById('c_reg').value) || 0,
-    contractual_direct_emp: parseInt(document.getElementById('c_con').value) || 0
-  };
-
-  // Use .upsert() with 'onConflict' targeting user_id 
-  // This ensures one user only has one company profile
-  const { error } = await sb
-    .from('company_profile')
-    .upsert(payload, { onConflict: 'user_id' });
-  
-  if (!error) {
-    moveNext();
-  } else {
-    console.error("Supabase Error:", error);
-    alert("Error: " + error.message);
-    btn.disabled = false;
-    btn.innerText = "Save & Continue";
-  }
-}
 
   function toggleTheme() { document.body.classList.toggle('light-theme'); }
   function handleLogout() { sb.auth.signOut().then(() => window.location.href = 'login.php'); }
-  
   window.onload = init;
 </script>
 </body>
