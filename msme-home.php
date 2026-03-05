@@ -281,10 +281,16 @@
             <select id="c_org">
               <option>Sole Proprietorship</option>
               <option>Partnership</option>
+              <option>Cooperative</option>
               <option>Corporation</option>
             </select>
           </div>
-          <div class="input-group"><label>Business Type</label><input id="c_btype"></div>
+          <div class="input-group"><label>Business Type</label>
+              <select id="c_btype">
+                <option>Profit</option>
+                <option>Non-Profit</option>
+              </select>
+          </div>
           <div class="input-group"><label>MSME Type</label>
             <select id="c_mtype">
               <option>Micro</option>
@@ -294,18 +300,53 @@
             </select>
           </div>
           <div class="input-group"><label>Industry Sector</label><input id="c_sector"></div>
-          <div class="input-group"><label>DTI Registration No.</label><input id="c_dti"></div>
-          <div class="input-group"><label>SEC Registration No.</label><input id="c_sec"></div>
-          <div class="input-group"><label>CDA Registration No.</label><input id="c_cda"></div>
-          <div class="input-group"><label>Other</label><input id="c_other"></div>
+          <h4 style="margin: 25px 0 15px 0; font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Regulatory Registrations</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div class="input-group"><label>DTI Registration No.</label><input id="c_dti"></div>
+        <div class="input-group"><label>Date of Registration</label><input type="date" id="c_dti_date"></div>
+        
+        <div class="input-group"><label>SEC Registration No.</label><input id="c_sec"></div>
+        <div class="input-group"><label>Date of Registration</label><input type="date" id="c_sec_date"></div>
+        
+        <div class="input-group"><label>CDA Registration No.</label><input id="c_cda"></div>
+        <div class="input-group"><label>Date of Registration</label><input type="date" id="c_cda_date"></div>
+        
+        <div class="input-group"><label>Other</label><input id="c_other" placeholder="e.g. Mayor's Permit No."></div>
+        <div class="input-group"><label>Registration Date</label><input type="date" id="c_other_date"></div>
+      </div>
         </div>
 
         <h4 style="margin: 30px 0 15px 0; font-size: 14px; color: var(--accent); border-top: 1px solid var(--border-color); padding-top: 20px;">Employment Information</h4>
-        <div class="form-grid">
-          <div class="input-group"><label>Regular Direct Employees</label><input type="number" id="c_reg" value="0"></div>
-          <div class="input-group"><label>Contractual Direct Employees</label><input type="number" id="c_con" value="0"></div>
-        </div>
-        <button class="primary-btn" id="saveBizBtn" style="margin-top: 30px;" onclick="saveBusinessInfo()">Save & Continue</button>
+      
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
+        <div style="font-size: 11px; color: var(--text-muted); font-weight: 800;">TYPE OF EMPLOYMENT</div>
+        <div style="font-size: 11px; color: var(--text-muted); font-weight: 800; text-align: center;">MALE</div>
+        <div style="font-size: 11px; color: var(--text-muted); font-weight: 800; text-align: center;">FEMALE</div>
+      </div>
+
+      <div style="font-size: 12px; font-weight: 700; margin: 10px 0;">Direct Workers</div>
+      <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 10px;">
+        <div style="font-size: 11px; display: flex; align-items: center;">Production</div>
+        <input type="number" id="e_dp_m" value="0">
+        <input type="number" id="e_dp_f" value="0">
+        
+        <div style="font-size: 11px; display: flex; align-items: center;">Non-Production</div>
+        <input type="number" id="e_dnp_m" value="0">
+        <input type="number" id="e_dnp_f" value="0">
+      </div>
+
+      <div style="font-size: 12px; font-weight: 700; margin: 20px 0 10px 0;">Indirect / Contract Workers</div>
+      <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr;">
+        <div style="font-size: 11px; display: flex; align-items: center;">Production</div>
+        <input type="number" id="e_ip_m" value="0">
+        <input type="number" id="e_ip_f" value="0">
+        
+        <div style="font-size: 11px; display: flex; align-items: center;">Non-Production</div>
+        <input type="number" id="e_inp_m" value="0">
+        <input type="number" id="e_inp_f" value="0">
+      </div>
+
+      <button class="primary-btn" id="saveBizBtn" style="margin-top: 30px;" onclick="saveBusinessInfo()">Save & Continue</button>
       </div>`;
   }
 
@@ -321,7 +362,6 @@
     enterprise_long: parseFloat(document.getElementById('c_long').value) || 0,
     contact_person: document.getElementById('c_cp').value,
     enterprise_email: document.getElementById('c_email').value,
-    // Note: Schema says 'date', but you mentioned changing to int4
     year_established: parseInt(document.getElementById('c_year').value) || 0, 
     current_capitalization: parseFloat(document.getElementById('c_cap').value) || 0,
     organization_type: document.getElementById('c_org').value,
@@ -329,12 +369,21 @@
     msme_type: document.getElementById('c_mtype').value,
     industry_sector: document.getElementById('c_sector').value,
     DTI_reg_num: document.getElementById('c_dti').value,
+    dti_reg_date: document.getElementById('c_dti_date').value || null,
     SEC_reg_num: document.getElementById('c_sec').value,
+    sec_reg_date: document.getElementById('c_sec_date').value || null,
     CDA_reg_num: document.getElementById('c_cda').value,
+    cda_reg_date: document.getElementById('c_cda_date').value || null,
     others: document.getElementById('c_other').value,
-    // MATCHING SCHEMA NAMES EXACTLY
-    regular_direct_emp: parseInt(document.getElementById('c_reg').value) || 0,
-    contractual_direct_emp: parseInt(document.getElementById('c_con').value) || 0 
+    other_reg_date: document.getElementById('c_other_date').value || null,
+    emp_direct_prod_male: parseInt(document.getElementById('e_dp_m').value) || 0,
+    emp_direct_prod_female: parseInt(document.getElementById('e_dp_f').value) || 0,
+    emp_direct_nonprod_male: parseInt(document.getElementById('e_dnp_m').value) || 0,
+    emp_direct_nonprod_female: parseInt(document.getElementById('e_dnp_f').value) || 0,
+    emp_indirect_prod_male: parseInt(document.getElementById('e_ip_m').value) || 0,
+    emp_indirect_prod_female: parseInt(document.getElementById('e_ip_f').value) || 0,
+    emp_indirect_nonprod_male: parseInt(document.getElementById('e_inp_m').value) || 0,
+    emp_indirect_nonprod_female: parseInt(document.getElementById('e_inp_f').value) || 0 
   };
 
   const { error } = await sb
