@@ -122,7 +122,7 @@
   const URL = 'https://hmxrblblcpbikkxcwwni.supabase.co';
   const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw'; 
 
-  let supabase;
+  let supabaseClient;
   let user = null;
   let profile = null;
   let currentStep = 3;
@@ -151,7 +151,7 @@
       if (p) {
         profile = p;
         document.getElementById('sidebarUserName').innerText = p.first_name + ' ' + p.last_name;
-        currentStep = p.current_step || 2;
+        currentStep = p.current_step || 3;
         render();
       }
     } catch (e) { console.error("Initialization Failed", e); }
