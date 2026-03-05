@@ -289,9 +289,10 @@
   function renderBusinessForm() {
     return `
       <div style="background: rgba(128,128,128,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; margin-top: 15px;">
-        <h4 style="margin: 0 0 20px 0; font-size: 14px; color: var(--accent);">Enterprise Details</h4>
+        
+        <h4 style="margin: 0 0 20px 0; font-size: 14px; color: var(--accent); font-weight: 800;">Enterprise Details</h4>
         <div class="form-grid">
-          <div class="input-group"><label>Enterprise ID</label><input id="c_eid" placeholder="Auto-generated"></div>
+          <div class="input-group"><label>Enterprise ID</label><input id="c_eid" placeholder="Auto-generated" disabled></div>
           <div class="input-group"><label>Enterprise Name</label><input id="c_name"></div>
           <div class="input-group" style="grid-column: span 2;"><label>Enterprise Address</label><input id="c_addr"></div>
           
@@ -302,6 +303,7 @@
           <div class="input-group"><label>Enterprise Email</label><input type="email" id="c_email"></div>
           <div class="input-group"><label>Year Established</label><input type="number" id="c_year" value="2024"></div>
           <div class="input-group"><label>Current Capitalization</label><input type="number" step="0.01" id="c_cap"></div>
+          
           <div class="input-group"><label>Organization Type</label>
             <select id="c_org">
               <option>Sole Proprietorship</option>
@@ -325,67 +327,67 @@
             </select>
           </div>
           <div class="input-group"><label>Industry Sector</label><input id="c_sector"></div>
-          
-          <div style="margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 25px;">
-        <h4 style="margin-bottom: 20px; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Regulatory Registrations</h4>
-        <div class="form-grid">
-          <div class="input-group"><label>DTI Registration No.</label><input id="c_dti"></div>
-          <div class="input-group"><label>Registration Date</label><input type="date" id="c_dti_date"></div>
-          
-          <div class="input-group"><label>SEC Registration No.</label><input id="c_sec"></div>
-          <div class="input-group"><label>Registration Date</label><input type="date" id="c_sec_date"></div>
-          
-          <div class="input-group"><label>CDA Registration No.</label><input id="c_cda"></div>
-          <div class="input-group"><label>Registration Date</label><input type="date" id="c_cda_date"></div>
-          
-          <div class="input-group"><label>Other</label><input id="c_other" placeholder="e.g. Mayor's Permit"></div>
-          <div class="input-group"><label>Registration Date</label><input type="date" id="c_other_date"></div>
         </div>
-      </div>
 
-      <div style="margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 25px;">
-        <h4 style="margin-bottom: 20px; font-size: 14px; color: var(--accent); font-weight: 800;">Employment Information</h4>
-        
-        <div style="overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse; min-width: 400px;">
-            <thead>
-              <tr style="text-align: left;">
-                <th style="padding: 10px 5px; font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Type of Employment</th>
-                <th style="padding: 10px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; text-align: center;">Male</th>
-                <th style="padding: 10px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; text-align: center;">Female</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td colspan="3" style="padding: 15px 5px 10px; font-size: 13px; font-weight: 700; color: var(--text-main);">Direct Workers</td></tr>
-              <tr>
-                <td style="padding: 5px; font-size: 12px; color: var(--text-muted);">Production</td>
-                <td style="padding: 5px;"><input type="number" id="e_dp_m" class="matrix-input" value="0"></td>
-                <td style="padding: 5px;"><input type="number" id="e_dp_f" class="matrix-input" value="0"></td>
-              </tr>
-              <tr style="border-bottom: 1px solid var(--border-color);">
-                <td style="padding: 5px 5px 15px; font-size: 12px; color: var(--text-muted);">Non-Production</td>
-                <td style="padding: 5px 5px 15px;"><input type="number" id="e_dnp_m" class="matrix-input" value="0"></td>
-                <td style="padding: 5px 5px 15px;"><input type="number" id="e_dnp_f" class="matrix-input" value="0"></td>
-              </tr>
-              
-              <tr><td colspan="3" style="padding: 25px 5px 10px; font-size: 13px; font-weight: 700; color: var(--text-main);">Indirect / Contract Workers</td></tr>
-              <tr>
-                <td style="padding: 5px; font-size: 12px; color: var(--text-muted);">Production</td>
-                <td style="padding: 5px;"><input type="number" id="e_ip_m" class="matrix-input" value="0"></td>
-                <td style="padding: 5px;"><input type="number" id="e_ip_f" class="matrix-input" value="0"></td>
-              </tr>
-              <tr>
-                <td style="padding: 5px; font-size: 12px; color: var(--text-muted);">Non-Production</td>
-                <td style="padding: 5px;"><input type="number" id="e_inp_m" class="matrix-input" value="0"></td>
-                <td style="padding: 5px;"><input type="number" id="e_inp_f" class="matrix-input" value="0"></td>
-              </tr>
-            </tbody>
-          </table>
+        <div style="margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 25px;">
+          <h4 style="margin-bottom: 20px; font-size: 14px; color: var(--accent); font-weight: 800; text-transform: uppercase;">Regulatory Registrations</h4>
+          <div class="form-grid">
+            <div class="input-group"><label>DTI Registration No.</label><input id="c_dti"></div>
+            <div class="input-group"><label>Registration Date</label><input type="date" id="c_dti_date"></div>
+            
+            <div class="input-group"><label>SEC Registration No.</label><input id="c_sec"></div>
+            <div class="input-group"><label>Registration Date</label><input type="date" id="c_sec_date"></div>
+            
+            <div class="input-group"><label>CDA Registration No.</label><input id="c_cda"></div>
+            <div class="input-group"><label>Registration Date</label><input type="date" id="c_cda_date"></div>
+            
+            <div class="input-group"><label>Other</label><input id="c_other" placeholder="e.g. Mayor's Permit"></div>
+            <div class="input-group"><label>Registration Date</label><input type="date" id="c_other_date"></div>
+          </div>
         </div>
-      </div>
-      
-      
-      <button class="primary-btn" id="saveBizBtn" style="margin-top: 30px;" onclick="saveBusinessInfo()">Save & Continue</button>
+
+        <div style="margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 25px;">
+          <h4 style="margin-bottom: 20px; font-size: 14px; color: var(--accent); font-weight: 800;">Employment Information</h4>
+          
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; min-width: 400px;">
+              <thead>
+                <tr style="text-align: left;">
+                  <th style="padding: 10px 5px; font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Type of Employment</th>
+                  <th style="padding: 10px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; text-align: center;">Male</th>
+                  <th style="padding: 10px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; text-align: center;">Female</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="3" style="padding: 15px 5px 10px; font-size: 13px; font-weight: 700; color: var(--text-main);">Direct Workers</td></tr>
+                <tr>
+                  <td style="padding: 5px; font-size: 12px; color: var(--text-muted);">Production</td>
+                  <td style="padding: 5px;"><input type="number" id="e_dp_m" class="matrix-input" value="0"></td>
+                  <td style="padding: 5px;"><input type="number" id="e_dp_f" class="matrix-input" value="0"></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 5px 5px 15px; font-size: 12px; color: var(--text-muted);">Non-Production</td>
+                  <td style="padding: 5px 5px 15px;"><input type="number" id="e_dnp_m" class="matrix-input" value="0"></td>
+                  <td style="padding: 5px 5px 15px;"><input type="number" id="e_dnp_f" class="matrix-input" value="0"></td>
+                </tr>
+                
+                <tr><td colspan="3" style="padding: 25px 5px 10px; font-size: 13px; font-weight: 700; color: var(--text-main);">Indirect / Contract Workers</td></tr>
+                <tr>
+                  <td style="padding: 5px; font-size: 12px; color: var(--text-muted);">Production</td>
+                  <td style="padding: 5px;"><input type="number" id="e_ip_m" class="matrix-input" value="0"></td>
+                  <td style="padding: 5px;"><input type="number" id="e_ip_f" class="matrix-input" value="0"></td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px; font-size: 12px; color: var(--text-muted);">Non-Production</td>
+                  <td style="padding: 5px;"><input type="number" id="e_inp_m" class="matrix-input" value="0"></td>
+                  <td style="padding: 5px;"><input type="number" id="e_inp_f" class="matrix-input" value="0"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <button class="primary-btn" id="saveBizBtn" style="margin-top: 40px;" onclick="saveBusinessInfo()">Save & Continue</button>
       </div>`;
   }
 
