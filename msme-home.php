@@ -190,7 +190,7 @@
 
   async function init() {
     const { data: { user: u } } = await sb.auth.getUser();
-    if (!u) return window.location.href = 'login.php';
+    if (!u) return window.location.href = 'login-mock.php';
     user = u;
 
     const { data: p } = await sb.from('user_profiles').select('*').eq('id', user.id).single();
@@ -253,7 +253,7 @@
     renderSteps();
   }
 
-  function handleLogout() { window.location.href = 'login.php'; }
+  function handleLogout() { window.location.href = 'login-mock.php'; }
   window.onload = init;
 </script>
 </body>
