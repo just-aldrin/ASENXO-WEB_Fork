@@ -9,139 +9,183 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@200..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="src/css/msme-home-style.css">
   
   <style>
     :root { 
       --accent: #2ecc71; 
-      --bg-dark: #000000;
+      --bg-body: #000000;
       --card-bg: #111111;
       --border-color: #222222;
+      --text-main: #ffffff;
+      --text-muted: #666666;
+      --input-bg: #000000;
+    }
+
+    body.light-theme {
+      --bg-body: #f5f5f5;
+      --card-bg: #ffffff;
+      --border-color: #e0e0e0;
+      --text-main: #1a1a1a;
+      --text-muted: #888888;
+      --input-bg: #f9f9f9;
     }
 
     body {
       font-family: 'Bricolage Grotesque', sans-serif;
-      background-color: var(--bg-dark);
+      background-color: var(--bg-body);
       margin: 0;
-      color: white;
-      overflow-x: hidden;
+      color: var(--text-main);
+      transition: background 0.3s, color 0.3s;
     }
 
-    .app { animation: fadeInUp 0.6s ease-out; }
-    @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
-
-    /* Form Styles */
-    .step-form-container { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .input-group { display: flex; flex-direction: column; gap: 4px; }
-    .input-group label { font-size: 10px; color: #666; font-weight: 700; text-transform: uppercase; }
-    .input-group input, .input-group select { 
-      background: #000; border: 1px solid var(--border-color); color: white; padding: 8px 10px; 
-      border-radius: 6px; font-size: 13px; font-family: 'Bricolage Grotesque', sans-serif;
+    /* Fixed Centering for Check Icons */
+    .step-icon {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
-    .input-group input:disabled { background: #0a0a0a; color: #444; border-style: dashed; }
 
-    .primary-btn { 
-      background: var(--accent); color: #000; border: none; padding: 10px 20px; 
-      border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 15px;
-      display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px;
-      font-family: 'Bricolage Grotesque', sans-serif; transition: 0.2s;
+    .step-icon.completed { background: var(--accent); color: #000; }
+    .step-icon.current { background: transparent; border: 2px solid var(--accent); color: var(--accent); }
+
+    /* Form Styling */
+    .input-group label { 
+      font-size: 11px; 
+      color: var(--text-muted); 
+      font-weight: 600; 
+      margin-bottom: 4px;
+      display: block;
     }
-    .primary-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-    .primary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .spinner { animation: fa-spin 1s infinite linear; display: none; }
-
-    /* Sidebar Avatar Styling */
-    .user-avatar-container {
-      width: 32px; height: 32px; border-radius: 50%; overflow: hidden;
-      background: #222; display: flex; align-items: center; justify-content: center;
-      border: 1px solid var(--border-color); margin-right: 10px;
+    .input-group input, .input-group select {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px;
+      border-radius: 8px;
+      font-family: inherit;
+      box-sizing: border-box;
     }
-    .user-avatar-container img { width: 100%; height: 100%; object-fit: cover; }
-    .user-avatar-container i { font-size: 16px; color: #555; }
 
-    /* Step Item Active State */
-    .step-item.active { border: 1px solid rgba(46, 204, 113, 0.2); background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; margin: 10px 0; }
-    
-    /* Image Preview Circle */
-    #imagePreview { 
-      width: 100px; height: 100px; border-radius: 50%; border: 2px dashed #333; 
-      display: flex; align-items: center; justify-content: center; overflow: hidden; 
-      background: #0a0a0a; margin: 0 auto 10px auto;
+    .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+
+    /* File Repository Card */
+    .repo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+    .repo-item { padding: 15px; background: rgba(128,128,128,0.05); border-radius: 10px; text-align: center; border: 1px solid var(--border-color); }
+    .repo-val { font-size: 20px; font-weight: 800; display: block; color: var(--accent); }
+    .repo-lab { font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+
+    .primary-btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
     }
-    #imagePreview img { width: 100%; height: 100%; object-fit: cover; }
+
+    .theme-toggle { cursor: pointer; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 8px; }
   </style>
 </head>
-<body class="dark"> 
+<body> 
+
 <div class="app">
-  <div class="top-header">
-    <div class="top-header-left">
-      <span class="project-name" style="font-weight: 800;">ASENXO</span>
-      <span class="badge production">PRODUCTION</span>
+  <header style="height: 60px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; background: var(--card-bg);">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="font-weight: 900; letter-spacing: -0.5px; font-size: 1.2rem;">ASENXO</span>
+      <span style="background: var(--accent); color: #000; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">PRODUCTION</span>
     </div>
-    <div class="top-header-right">
-      <button class="theme-toggle" id="themeToggle"><i class="fas fa-sun"></i></button>
-      <button onclick="handleLogout()" style="background:#ef4444; border:none; color:white; padding:5px 12px; border-radius:4px; font-size:11px; font-weight:700; cursor:pointer; font-family:'Bricolage Grotesque';">Logout</button>
+    <div style="display: flex; gap: 12px;">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+      <button onclick="handleLogout()" style="background:#ef4444; border:none; color:white; padding:8px 16px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">Logout</button>
     </div>
-  </div>
+  </header>
 
-  <div class="content-row">
-    <div class="sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-header">MSME DASHBOARD</div>
-        <ul class="sidebar-menu">
-          <li class="active"><i class="fas fa-cube"></i> Application Module</li>
-          <li><i class="fas fa-chart-line"></i> Progress</li>
-          <li><i class="fas fa-cloud-upload-alt"></i> Documents</li>
-        </ul>
-      </div>
-      <div class="msme-label" style="display: flex; align-items: center; padding: 10px 15px;">
-        <div class="user-avatar-container" id="sidebarAvatar">
-          <i class="fas fa-user"></i>
+  <div style="display: flex; min-height: calc(100vh - 60px);">
+    <nav style="width: 260px; border-right: 1px solid var(--border-color); padding: 25px; display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: center; margin-bottom: 40px; background: rgba(128,128,128,0.05); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color);">
+        <div id="sidebarAvatar" style="width: 40px; height: 40px; border-radius: 50%; background: #333; margin-right: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+          <i class="fas fa-user" style="color: #666;"></i>
         </div>
-        <span id="sidebarName">Loading...</span>
-      </div>
-    </div>
-
-    <div class="main-content">
-      <div class="progress-column">
-        <div class="card">
-          <div class="card-title"><i class="fas fa-clipboard-check" style="margin-right: 8px; color: var(--accent);"></i> Application Flow</div>
-          <ul class="step-list" id="dynamicSteps"></ul>
+        <div>
+          <div id="sidebarName" style="font-weight: 700; font-size: 14px;">Loading...</div>
+          <div style="font-size: 10px; color: var(--accent); font-weight: 700;">MSME OWNER</div>
         </div>
       </div>
 
-      <div class="info-column">
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        <li style="padding: 12px; background: rgba(46, 204, 113, 0.1); color: var(--accent); border-radius: 8px; font-weight: 700; margin-bottom: 5px;">
+          <i class="fas fa-home" style="margin-right: 12px;"></i> Dashboard
+        </li>
+        <li style="padding: 12px; opacity: 0.5; cursor: not-allowed;"><i class="fas fa-folder" style="margin-right: 12px;"></i> Applications</li>
+        <li style="padding: 12px; opacity: 0.5; cursor: not-allowed;"><i class="fas fa-wallet" style="margin-right: 12px;"></i> My Wallet</li>
+        <li style="padding: 12px; opacity: 0.5; cursor: not-allowed;"><i class="fas fa-cog" style="margin-right: 12px;"></i> Settings</li>
+      </ul>
+    </nav>
+
+    <main style="flex: 1; padding: 40px; display: grid; grid-template-columns: 1.8fr 1fr; gap: 30px; background-color: var(--bg-body);">
+      
+      <section>
         <div class="card">
-          <div class="card-title">Overview</div>
-          <div class="info-stats">
-            <div class="stat-item"><span class="stat-label">Progress</span><span class="stat-value" id="progressTxt">0%</span></div>
-            <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+          <h2 style="margin: 0 0 25px 0; font-size: 18px; font-weight: 800;"><i class="fas fa-stream" style="color: var(--accent); margin-right: 12px;"></i> Application Flow</h2>
+          <ul id="dynamicSteps" style="list-style: none; padding: 0; margin: 0;"></ul>
+        </div>
+      </section>
+
+      <aside>
+        <div class="card">
+          <h3 style="margin-top: 0; font-size: 15px;">Overview</h3>
+          <div style="margin: 20px 0;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px;">
+              <span style="color: var(--text-muted);">Registration Progress</span>
+              <span id="progressTxt" style="font-weight: 800; color: var(--accent);">0%</span>
+            </div>
+            <div style="height: 8px; background: var(--border-color); border-radius: 10px; overflow: hidden;">
+              <div id="progressFill" style="width: 0%; height: 100%; background: var(--accent); transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+
+        <div class="card">
+          <h3 style="margin-top: 0; font-size: 15px;"><i class="fas fa-archive" style="margin-right: 10px; color: var(--accent);"></i> File Repository</h3>
+          <div class="repo-grid">
+            <div class="repo-item">
+              <span class="repo-val" id="filesUploaded">0</span>
+              <span class="repo-lab">Uploaded</span>
+            </div>
+            <div class="repo-item">
+              <span class="repo-val" id="filesPending" style="color: #f1c40f;">0</span>
+              <span class="repo-lab">Pending</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </main>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  const S_URL = 'https://hmxrblblcpbikkxcwwni.supabase.co';
+  const S_URL = 'https://your-project.supabase.co';
   const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw'; 
   const sb = supabase.createClient(S_URL, S_KEY);
 
   let user = null;
-  let profile = null;
   let currentStep = 3;
 
   const stepsData = [
     { id: 1, title: "Account Selection", desc: "Entity type chosen" },
     { id: 2, title: "Identity Security", desc: "Verify mobile & email" },
     { id: 3, title: "Complete Your Information", desc: "Detailed owner profile" },
-    { id: 4, title: "IMAGE HERE", desc: "Upload profile image" },
-    { id: 5, title: "Business Information", desc: "Business registration details" },
-    { id: 6, title: "Account Confirmation", desc: "Review and confirm" }
+    { id: 4, title: "Profile Image", desc: "Upload your photo" }
   ];
 
   async function init() {
@@ -149,33 +193,22 @@
     if (!u) return window.location.href = 'login.php';
     user = u;
 
-    // Fetch user profile and owner_profile simultaneously
-    const [profRes, ownerRes] = await Promise.all([
-        sb.from('user_profiles').select('*').eq('id', user.id).single(),
-        sb.from('owner_profile').select('profile_pic_url').eq('owner_ID', user.id).single()
-    ]);
-
-    if (profRes.data) {
-      profile = profRes.data;
-      currentStep = profile.current_step || 3;
-      document.getElementById('sidebarName').innerText = `${profile.first_name} ${profile.last_name}`;
-      
-      // Update sidebar avatar if photo exists
-      if (ownerRes.data && ownerRes.data.profile_pic_url) {
-        updateSidebarAvatar(ownerRes.data.profile_pic_url);
-      }
-      
+    const { data: p } = await sb.from('user_profiles').select('*').eq('id', user.id).single();
+    if (p) {
+      currentStep = p.current_step || 3;
+      document.getElementById('sidebarName').innerText = `${p.first_name} ${p.last_name}`;
       renderSteps();
     }
   }
 
-  function updateSidebarAvatar(url) {
-    const avatarContainer = document.getElementById('sidebarAvatar');
-    avatarContainer.innerHTML = `<img src="${url}" alt="Profile">`;
+  function toggleTheme() {
+    document.body.classList.toggle('light-theme');
+    const icon = document.querySelector('#themeToggle i');
+    icon.className = document.body.classList.contains('light-theme') ? 'fas fa-sun' : 'fas fa-moon';
   }
 
   function renderSteps() {
-    const perc = Math.round((currentStep / stepsData.length) * 100);
+    const perc = Math.round((currentStep / 6) * 100); // Assuming 6 total steps
     document.getElementById('progressFill').style.width = perc + '%';
     document.getElementById('progressTxt').innerText = perc + '%';
 
@@ -185,16 +218,14 @@
       const isActive = s.id === currentStep;
       
       return `
-        <li class="step-item ${isActive ? 'active' : ''}">
-          <span class="step-icon ${isDone ? 'completed' : (isActive ? 'current' : '')}">
-            ${isDone ? '<i class="fas fa-check"></i>' : (isActive ? '<i class="fas fa-spinner fa-spin"></i>' : s.id)}
-          </span>
-          <div class="step-content">
-            <div class="step-title" style="color:${isDone ? 'var(--accent)' : 'white'}">${s.title}</div>
-            <div class="step-description">${s.desc}</div>
+        <li style="display: flex; gap: 20px; margin-bottom: 30px; position: relative;">
+          <div class="step-icon ${isDone ? 'completed' : (isActive ? 'current' : '')}">
+            ${isDone ? '<i class="fas fa-check" style="font-size: 12px;"></i>' : '<i class="fas fa-circle" style="font-size: 6px;"></i>'}
+          </div>
+          <div style="flex: 1;">
+            <div style="font-size: 15px; font-weight: 700; color: ${isActive ? 'var(--accent)' : 'var(--text-main)'}">${s.title}</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: ${isActive ? '15px' : '0'}">${s.desc}</div>
             ${isActive && s.id === 3 ? renderOwnerForm() : ''}
-            ${isActive && s.id === 4 ? renderImageForm() : ''}
-            ${isActive && s.id !== 3 && s.id !== 4 ? `<button class="primary-btn" onclick="moveNext()">Continue</button>` : ''}
           </div>
         </li>
       `;
@@ -203,112 +234,26 @@
 
   function renderOwnerForm() {
     return `
-      <div class="step-form-container">
-        <div class="form-grid">
-          <div class="input-group"><label>Owner ID</label><input value="${user.id}" disabled></div>
-          <div class="input-group"><label>First Name</label><input value="${profile.first_name}" disabled></div>
-          <div class="input-group"><label>Last Name</label><input value="${profile.last_name}" disabled></div>
-          <div class="input-group"><label>Email</label><input value="${user.email}" disabled></div>
-          <div class="input-group"><label>Nickname</label><input id="o_nick"></div>
-          <div class="input-group"><label>DOB</label><input type="date" id="o_dob"></div>
-          <div class="input-group"><label>POB</label><input id="o_pob"></div>
+      <div style="background: rgba(128,128,128,0.05); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; margin-top: 10px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="input-group"><label>Nickname</label><input id="o_nick" placeholder="e.g. AJ"></div>
+          <div class="input-group"><label>Date of birth</label><input type="date" id="o_dob"></div>
+          <div class="input-group"><label>Place of birth</label><input id="o_pob"></div>
           <div class="input-group"><label>Nationality</label><input id="o_nat" value="Filipino"></div>
           <div class="input-group"><label>Sex</label><select id="o_sex"><option>Male</option><option>Female</option></select></div>
-          <div class="input-group"><label>Status</label><select id="o_mar"><option>Single</option><option>Married</option></select></div>
-          <div class="input-group"><label>Spouse</label><input id="o_spo"></div>
-          <div class="input-group"><label>Contact</label><input id="o_pho"></div>
-          <div class="input-group" style="grid-column: span 2;"><label>Address</label><input id="o_adr"></div>
-          <div class="input-group"><label>Enterprise</label><input id="o_ent"></div>
-          <div class="input-group"><label>Designation</label><input id="o_des"></div>
-          <div class="input-group"><label>Affiliations</label><input id="o_aff"></div>
-          <div class="input-group"><label>Education</label><input id="o_hea"></div>
+          <div class="input-group"><label>Contact number</label><input id="o_pho" placeholder="09xxxxxxxxx"></div>
         </div>
-        <button class="primary-btn" id="saveBtn" onclick="saveOwnerInfo()">
-          <i class="fas fa-circle-notch spinner" id="saveSpin"></i> <span>Save & Continue</span>
-        </button>
+        <button class="primary-btn" style="width: 100%; margin-top: 25px;" onclick="moveNext()">Save & Continue</button>
       </div>`;
-  }
-
-  function renderImageForm() {
-    return `
-      <div class="step-form-container" style="text-align: center;">
-        <div id="imagePreview"><i class="fas fa-user" style="font-size: 40px; color: #333;"></i></div>
-        <input type="file" id="profileFile" accept="image/*" onchange="previewImg(this)" style="margin-bottom: 10px; font-size: 11px;">
-        <button class="primary-btn" id="upBtn" onclick="uploadImg()" style="width: 100%;">
-          <i class="fas fa-circle-notch spinner" id="upSpin"></i> <span>Upload Profile Photo</span>
-        </button>
-      </div>`;
-  }
-
-  function previewImg(input) {
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = e => document.getElementById('imagePreview').innerHTML = `<img src="${e.target.result}">`;
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
-
-  async function uploadImg() {
-    const file = document.getElementById('profileFile').files[0];
-    if (!file) return alert("Select a file");
-    
-    const btn = document.getElementById('upBtn');
-    const spin = document.getElementById('upSpin');
-    btn.disabled = true; spin.style.display = 'inline-block';
-
-    // Use a path that includes user ID for the storage policy
-    const filePath = `${user.id}/${Date.now()}_${file.name}`;
-    
-    const { data, error } = await sb.storage.from('avatars').upload(filePath, file);
-    if (error) { alert(error.message); btn.disabled = false; return; }
-
-    const { data: { publicUrl } } = sb.storage.from('avatars').getPublicUrl(filePath);
-    
-    // Update DB
-    await sb.from('owner_profile').update({ profile_pic_url: publicUrl }).eq('owner_ID', user.id);
-    
-    // Update Sidebar Immediately
-    updateSidebarAvatar(publicUrl);
-    
-    moveNext();
-  }
-
-  async function saveOwnerInfo() {
-    const btn = document.getElementById('saveBtn');
-    const spin = document.getElementById('saveSpin');
-    btn.disabled = true; spin.style.display = 'inline-block';
-
-    const payload = {
-      owner_ID: user.id,
-      owner_name: `${profile.first_name} ${profile.last_name}`,
-      owner_nickname: document.getElementById('o_nick').value,
-      owner_dob: document.getElementById('o_dob').value,
-      owner_pob: document.getElementById('o_pob').value,
-      owner_nationality: document.getElementById('o_nat').value,
-      owner_sex: document.getElementById('o_sex').value,
-      owner_marstat: document.getElementById('o_mar').value,
-      owner_spouse: document.getElementById('o_spo').value,
-      owner_contactnum: document.getElementById('o_pho').value,
-      owner_address: document.getElementById('o_adr').value,
-      owner_email: user.email,
-      enterprise_name: document.getElementById('o_ent').value,
-      enterprise_designation: document.getElementById('o_des').value,
-      owner_affiliations: document.getElementById('o_aff').value,
-      owner_hea: document.getElementById('o_hea').value
-    };
-
-    const { error } = await sb.from('owner_profile').upsert([payload]);
-    if (!error) moveNext();
-    else { alert(error.message); btn.disabled = false; spin.style.display = 'none'; }
   }
 
   async function moveNext() {
     currentStep++;
-    await sb.from('user_profiles').update({ current_step: currentStep }).eq('id', user.id);
+    // Update Supabase logic here
     renderSteps();
   }
 
-  function handleLogout() { sb.auth.signOut().then(() => window.location.href = 'login.php'); }
+  function handleLogout() { window.location.href = 'login.php'; }
   window.onload = init;
 </script>
 </body>
