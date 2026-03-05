@@ -4,56 +4,76 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ASENXO | MSME Dashboard</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@200..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="src/css/msme-home-style.css">
+  
   <style>
-    :root { --accent-color: #2ecc71; }
+    :root { 
+      --accent: #2ecc71; 
+      --bg-dark: #000000;
+      --card-bg: #111111;
+      --border-color: #222222;
+    }
+
+    body {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      background-color: var(--bg-dark);
+      margin: 0;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    .app { animation: fadeInUp 0.6s ease-out; }
+    @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+
+    /* Form Styles */
+    .step-form-container { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .input-group { display: flex; flex-direction: column; gap: 4px; }
+    .input-group label { font-size: 10px; color: #666; font-weight: 700; text-transform: uppercase; }
+    .input-group input, .input-group select { 
+      background: #000; border: 1px solid var(--border-color); color: white; padding: 8px 10px; 
+      border-radius: 6px; font-size: 13px; font-family: 'Bricolage Grotesque', sans-serif;
+    }
+    .input-group input:disabled { background: #0a0a0a; color: #444; border-style: dashed; }
+
+    .primary-btn { 
+      background: var(--accent); color: #000; border: none; padding: 10px 20px; 
+      border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 15px;
+      display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px;
+      font-family: 'Bricolage Grotesque', sans-serif; transition: 0.2s;
+    }
+    .primary-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .primary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .spinner { animation: fa-spin 1s infinite linear; display: none; }
+
+    /* Sidebar Avatar Styling */
+    .user-avatar-container {
+      width: 32px; height: 32px; border-radius: 50%; overflow: hidden;
+      background: #222; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border-color); margin-right: 10px;
+    }
+    .user-avatar-container img { width: 100%; height: 100%; object-fit: cover; }
+    .user-avatar-container i { font-size: 16px; color: #555; }
+
+    /* Step Item Active State */
+    .step-item.active { border: 1px solid rgba(46, 204, 113, 0.2); background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; margin: 10px 0; }
     
-    /* Layout Overrides to prevent double scrollbars and fix sidebar gap */
-    html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #000; }
-    .app { height: 100vh; display: flex; flex-direction: column; }
-    .content-row { display: flex; flex: 1; overflow: hidden; }
-
-    /* Sidebar: Flush to left/top under header */
-    .sidebar { width: 200px; background: #000; border-right: 1px solid #222; display: flex; flex-direction: column; flex-shrink: 0; }
-    .user-profile-box { padding: 10px 12px; border-bottom: 1px solid #333; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
-    .user-avatar { width: 32px; height: 32px; background: var(--accent-color); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; }
-    .user-name-sidebar { font-weight: 600; font-size: 12px; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    /* Main Area: One single scrollbar for content */
-    .main-content { flex: 1; overflow-y: auto; display: flex; padding: 15px; gap: 15px; }
-    .progress-column { flex: 1; }
-    .info-column { width: 240px; flex-shrink: 0; position: sticky; top: 0; height: fit-content; display: flex; flex-direction: column; gap: 10px; }
-
-    /* Compact Stepper */
-    .step-list { list-style: none; padding: 0; margin: 0; }
-    .step-item { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; margin-bottom: 6px; overflow: hidden; }
-    .step-header { padding: 6px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
-    .step-icon { width: 22px; height: 22px; border-radius: 50%; background: #262626; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 9px; color: #555; }
-    
-    .step-item.active { border-color: var(--accent-color); background: #1c1c1c; }
-    .step-item.active .step-icon { background: var(--accent-color); color: white; }
-    .step-item.completed .step-icon { background: var(--accent-color); color: white; }
-    .step-title { font-weight: 600; font-size: 11.5px; line-height: 1.2; }
-    .step-desc { font-size: 9.5px; color: #666; display: block; }
-
-    /* Form Expansion */
-    .step-content { display: none; padding: 10px 14px 14px 46px; border-top: 1px solid #262626; }
-    .step-item.active .step-content { display: block; }
-
-    /* Dense Form Grid */
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .input-group { margin-bottom: 4px; }
-    .input-group label { display: block; font-size: 8.5px; color: #777; margin-bottom: 2px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.3px; }
-    .input-group input, .input-group select { width: 100%; padding: 5px 8px; background: #000; border: 1px solid #333; color: white; border-radius: 4px; font-size: 11px; box-sizing: border-box; }
-    .input-group input:disabled { opacity: 0.4; border-style: dashed; }
-    
-    .primary-btn { background: var(--accent-color); color: #000; border: none; padding: 7px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: 700; margin-top: 6px; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .spinner { animation: rotate 1s linear infinite; display: none; font-size: 10px; }
-    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    /* Image Preview Circle */
+    #imagePreview { 
+      width: 100px; height: 100px; border-radius: 50%; border: 2px dashed #333; 
+      display: flex; align-items: center; justify-content: center; overflow: hidden; 
+      background: #0a0a0a; margin: 0 auto 10px auto;
+    }
+    #imagePreview img { width: 100%; height: 100%; object-fit: cover; }
   </style>
 </head>
-<body class="dark">
+<body class="dark"> 
 <div class="app">
   <div class="top-header">
     <div class="top-header-left">
@@ -62,49 +82,46 @@
     </div>
     <div class="top-header-right">
       <button class="theme-toggle" id="themeToggle"><i class="fas fa-sun"></i></button>
-      <button onclick="handleLogout()" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer; font-weight:700;">Logout</button>
+      <button onclick="handleLogout()" style="background:#ef4444; border:none; color:white; padding:5px 12px; border-radius:4px; font-size:11px; font-weight:700; cursor:pointer; font-family:'Bricolage Grotesque';">Logout</button>
     </div>
   </div>
 
   <div class="content-row">
-    <aside class="sidebar">
-      <div class="user-profile-box">
-        <div class="user-avatar"><i class="fas fa-user"></i></div>
-        <div class="user-info-text">
-          <span id="sidebarUserName" class="user-name-sidebar">Loading...</span>
-        </div>
-      </div>
+    <div class="sidebar">
       <div class="sidebar-section">
+        <div class="sidebar-header">MSME DASHBOARD</div>
         <ul class="sidebar-menu">
-          <li class="active"><a><i class="fas fa-home"></i> Dashboard</a></li>
-          <li><a><i class="fas fa-file-invoice"></i> Applications</a></li>
-          <li><a><i class="fas fa-wallet"></i> My Wallet</a></li>
+          <li class="active"><i class="fas fa-cube"></i> Application Module</li>
+          <li><i class="fas fa-chart-line"></i> Progress</li>
+          <li><i class="fas fa-cloud-upload-alt"></i> Documents</li>
         </ul>
       </div>
-    </aside>
+      <div class="msme-label" style="display: flex; align-items: center; padding: 10px 15px;">
+        <div class="user-avatar-container" id="sidebarAvatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <span id="sidebarName">Loading...</span>
+      </div>
+    </div>
 
-    <main class="main-content">
+    <div class="main-content">
       <div class="progress-column">
-        <ul class="step-list" id="middleStepList"></ul>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-clipboard-check" style="margin-right: 8px; color: var(--accent);"></i> Application Flow</div>
+          <ul class="step-list" id="dynamicSteps"></ul>
+        </div>
       </div>
 
-      <aside class="info-column">
-        <div class="card" style="padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px;">
-          <div style="font-size: 9px; color: #777; font-weight: 800; text-transform: uppercase;">Completion</div>
-          <div style="display: flex; justify-content: space-between; align-items: baseline; margin: 5px 0;">
-             <span id="progressPercent" style="font-size: 18px; font-weight: 800; color: white;">0%</span>
-             <span style="font-size: 8px; color: var(--accent-color);">ACTIVE</span>
-          </div>
-          <div style="height: 4px; background: #000; border-radius: 2px;">
-            <div id="progressBar" style="width: 0%; height: 100%; background: var(--accent-color); transition: 0.4s;"></div>
+      <div class="info-column">
+        <div class="card">
+          <div class="card-title">Overview</div>
+          <div class="info-stats">
+            <div class="stat-item"><span class="stat-label">Progress</span><span class="stat-value" id="progressTxt">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
           </div>
         </div>
-        <div class="card" style="padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px;">
-          <div style="font-size: 9px; color: #777; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">File Repository</div>
-          <div style="display: flex; justify-content: space-between;"><span style="font-size: 9px; color: #666;">UPLOADED</span><span id="fileCounter" style="font-size: 9px; color: white; font-weight: 700;">0</span></div>
-        </div>
-      </aside>
-    </main>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -112,105 +129,156 @@
 <script>
   const S_URL = 'https://hmxrblblcpbikkxcwwni.supabase.co';
   const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw'; 
-  const sbClient = supabase.createClient(S_URL, S_KEY);
+  const sb = supabase.createClient(S_URL, S_KEY);
 
   let user = null;
   let profile = null;
-  let currentStep = 2;
+  let currentStep = 3;
 
-  const steps = [
+  const stepsData = [
     { id: 1, title: "Account Selection", desc: "Entity type chosen" },
-    { id: 2, title: "Identity Security", desc: "Email confirmation status" },
-    { id: 3, title: "Owner Profile", desc: "Detailed background info" },
-    { id: 4, title: "Profile Image", desc: "Upload official photo" },
-    { id: 5, title: "Business Information", desc: "Registration details" },
-    { id: 6, title: "Final Documentation", desc: "Legal permit uploads" }
+    { id: 2, title: "Identity Security", desc: "Verify mobile & email" },
+    { id: 3, title: "Complete Your Information", desc: "Detailed owner profile" },
+    { id: 4, title: "IMAGE HERE", desc: "Upload profile image" },
+    { id: 5, title: "Business Information", desc: "Business registration details" },
+    { id: 6, title: "Account Confirmation", desc: "Review and confirm" }
   ];
 
   async function init() {
-    try {
-      const { data: { user: u } } = await sbClient.auth.getUser();
-      if (!u) { window.location.href = 'login.php'; return; }
-      user = u;
+    const { data: { user: u } } = await sb.auth.getUser();
+    if (!u) return window.location.href = 'login.php';
+    user = u;
 
-      const { data: p } = await sbClient.from('user_profiles').select('*').eq('id', user.id).single();
-      if (p) {
-        profile = p;
-        document.getElementById('sidebarUserName').innerText = `${p.first_name} ${p.last_name}`;
-        currentStep = p.current_step || 2;
-        refreshUI();
+    // Fetch user profile and owner_profile simultaneously
+    const [profRes, ownerRes] = await Promise.all([
+        sb.from('user_profiles').select('*').eq('id', user.id).single(),
+        sb.from('owner_profile').select('profile_pic_url').eq('owner_ID', user.id).single()
+    ]);
+
+    if (profRes.data) {
+      profile = profRes.data;
+      currentStep = profile.current_step || 3;
+      document.getElementById('sidebarName').innerText = `${profile.first_name} ${profile.last_name}`;
+      
+      // Update sidebar avatar if photo exists
+      if (ownerRes.data && ownerRes.data.profile_pic_url) {
+        updateSidebarAvatar(ownerRes.data.profile_pic_url);
       }
-    } catch (err) { console.error("Init Error:", err); }
+      
+      renderSteps();
+    }
   }
 
-  function refreshUI() {
-    const percent = Math.round((currentStep / steps.length) * 100);
-    document.getElementById('progressBar').style.width = percent + '%';
-    document.getElementById('progressPercent').innerText = percent + '%';
-    
-    const list = document.getElementById('middleStepList');
-    list.innerHTML = steps.map(s => {
-      const active = s.id === currentStep;
-      const done = s.id < currentStep;
+  function updateSidebarAvatar(url) {
+    const avatarContainer = document.getElementById('sidebarAvatar');
+    avatarContainer.innerHTML = `<img src="${url}" alt="Profile">`;
+  }
+
+  function renderSteps() {
+    const perc = Math.round((currentStep / stepsData.length) * 100);
+    document.getElementById('progressFill').style.width = perc + '%';
+    document.getElementById('progressTxt').innerText = perc + '%';
+
+    const list = document.getElementById('dynamicSteps');
+    list.innerHTML = stepsData.map(s => {
+      const isDone = s.id < currentStep;
+      const isActive = s.id === currentStep;
+      
       return `
-        <li class="step-item ${active ? 'active' : ''} ${done ? 'completed' : ''}">
-          <div class="step-header">
-            <div class="step-icon">${done ? '<i class="fas fa-check"></i>' : s.id}</div>
-            <div>
-              <div class="step-title" style="color:${done ? 'var(--accent-color)' : 'white'}">${s.title}</div>
-              <span class="step-desc">${s.desc}</span>
-            </div>
+        <li class="step-item ${isActive ? 'active' : ''}">
+          <span class="step-icon ${isDone ? 'completed' : (isActive ? 'current' : '')}">
+            ${isDone ? '<i class="fas fa-check"></i>' : (isActive ? '<i class="fas fa-spinner fa-spin"></i>' : s.id)}
+          </span>
+          <div class="step-content">
+            <div class="step-title" style="color:${isDone ? 'var(--accent)' : 'white'}">${s.title}</div>
+            <div class="step-description">${s.desc}</div>
+            ${isActive && s.id === 3 ? renderOwnerForm() : ''}
+            ${isActive && s.id === 4 ? renderImageForm() : ''}
+            ${isActive && s.id !== 3 && s.id !== 4 ? `<button class="primary-btn" onclick="moveNext()">Continue</button>` : ''}
           </div>
-          <div class="step-content">${getForm(s.id)}</div>
-        </li>`;
+        </li>
+      `;
     }).join('');
   }
 
-  function getForm(id) {
-    if (id === 2) return `<button class="primary-btn" onclick="moveNext()">Confirm Email Verified</button>`;
-    
-    if (id === 3 && profile) {
-      return `
-      <div class="form-grid">
-        <div class="input-group"><label>Owner ID</label><input value="${user.id}" disabled></div>
-        <div class="input-group"><label>First Name</label><input value="${profile.first_name}" disabled></div>
-        <div class="input-group"><label>Last Name</label><input value="${profile.last_name}" disabled></div>
-        <div class="input-group"><label>Email</label><input value="${user.email}" disabled></div>
-        
-        <div class="input-group"><label>Nickname</label><input id="o_nick" placeholder="e.g. AJ"></div>
-        <div class="input-group"><label>Date of Birth</label><input type="date" id="o_dob"></div>
-        <div class="input-group"><label>Place of Birth</label><input id="o_pob"></div>
-        <div class="input-group"><label>Nationality</label><input id="o_nat" value="Filipino"></div>
-        
-        <div class="input-group"><label>Sex</label><select id="o_sex"><option>Male</option><option>Female</option></select></div>
-        <div class="input-group"><label>Marital Status</label><input id="o_mar" placeholder="Single/Married"></div>
-        
-        <div class="input-group"><label>Spouse Name</label><input id="o_spo"></div>
-        <div class="input-group"><label>Contact Number</label><input id="o_pho"></div>
-        <div class="input-group" style="grid-column: span 2;"><label>Full Address</label><input id="o_adr"></div>
-        
-        <div class="input-group"><label>Enterprise Name</label><input id="o_ent"></div>
-        <div class="input-group"><label>Designation</label><input id="o_des"></div>
-        <div class="input-group"><label>Affiliations</label><input id="o_aff"></div>
-        <div class="input-group"><label>Educational Attainment</label><input id="o_hea"></div>
-      </div>
-      <button class="primary-btn" id="saveBtn" onclick="saveProfile()">
-        <i class="fas fa-circle-notch spinner" id="saveSpn"></i> <span id="saveTxt">Save & Continue</span>
-      </button>`;
-    }
-    return `<p style="font-size:9px; color:#444;">Pending previous steps...</p>`;
+  function renderOwnerForm() {
+    return `
+      <div class="step-form-container">
+        <div class="form-grid">
+          <div class="input-group"><label>Owner ID</label><input value="${user.id}" disabled></div>
+          <div class="input-group"><label>First Name</label><input value="${profile.first_name}" disabled></div>
+          <div class="input-group"><label>Last Name</label><input value="${profile.last_name}" disabled></div>
+          <div class="input-group"><label>Email</label><input value="${user.email}" disabled></div>
+          <div class="input-group"><label>Nickname</label><input id="o_nick"></div>
+          <div class="input-group"><label>DOB</label><input type="date" id="o_dob"></div>
+          <div class="input-group"><label>POB</label><input id="o_pob"></div>
+          <div class="input-group"><label>Nationality</label><input id="o_nat" value="Filipino"></div>
+          <div class="input-group"><label>Sex</label><select id="o_sex"><option>Male</option><option>Female</option></select></div>
+          <div class="input-group"><label>Status</label><select id="o_mar"><option>Single</option><option>Married</option></select></div>
+          <div class="input-group"><label>Spouse</label><input id="o_spo"></div>
+          <div class="input-group"><label>Contact</label><input id="o_pho"></div>
+          <div class="input-group" style="grid-column: span 2;"><label>Address</label><input id="o_adr"></div>
+          <div class="input-group"><label>Enterprise</label><input id="o_ent"></div>
+          <div class="input-group"><label>Designation</label><input id="o_des"></div>
+          <div class="input-group"><label>Affiliations</label><input id="o_aff"></div>
+          <div class="input-group"><label>Education</label><input id="o_hea"></div>
+        </div>
+        <button class="primary-btn" id="saveBtn" onclick="saveOwnerInfo()">
+          <i class="fas fa-circle-notch spinner" id="saveSpin"></i> <span>Save & Continue</span>
+        </button>
+      </div>`;
   }
 
-  async function saveProfile() {
-    const btn = document.getElementById('saveBtn');
-    const spn = document.getElementById('saveSpn');
-    const txt = document.getElementById('saveTxt');
-    
-    btn.disabled = true;
-    spn.style.display = 'inline-block';
-    txt.innerText = 'Processing...';
+  function renderImageForm() {
+    return `
+      <div class="step-form-container" style="text-align: center;">
+        <div id="imagePreview"><i class="fas fa-user" style="font-size: 40px; color: #333;"></i></div>
+        <input type="file" id="profileFile" accept="image/*" onchange="previewImg(this)" style="margin-bottom: 10px; font-size: 11px;">
+        <button class="primary-btn" id="upBtn" onclick="uploadImg()" style="width: 100%;">
+          <i class="fas fa-circle-notch spinner" id="upSpin"></i> <span>Upload Profile Photo</span>
+        </button>
+      </div>`;
+  }
 
-    const d = {
+  function previewImg(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => document.getElementById('imagePreview').innerHTML = `<img src="${e.target.result}">`;
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  async function uploadImg() {
+    const file = document.getElementById('profileFile').files[0];
+    if (!file) return alert("Select a file");
+    
+    const btn = document.getElementById('upBtn');
+    const spin = document.getElementById('upSpin');
+    btn.disabled = true; spin.style.display = 'inline-block';
+
+    // Use a path that includes user ID for the storage policy
+    const filePath = `${user.id}/${Date.now()}_${file.name}`;
+    
+    const { data, error } = await sb.storage.from('avatars').upload(filePath, file);
+    if (error) { alert(error.message); btn.disabled = false; return; }
+
+    const { data: { publicUrl } } = sb.storage.from('avatars').getPublicUrl(filePath);
+    
+    // Update DB
+    await sb.from('owner_profile').update({ profile_pic_url: publicUrl }).eq('owner_ID', user.id);
+    
+    // Update Sidebar Immediately
+    updateSidebarAvatar(publicUrl);
+    
+    moveNext();
+  }
+
+  async function saveOwnerInfo() {
+    const btn = document.getElementById('saveBtn');
+    const spin = document.getElementById('saveSpin');
+    btn.disabled = true; spin.style.display = 'inline-block';
+
+    const payload = {
       owner_ID: user.id,
       owner_name: `${profile.first_name} ${profile.last_name}`,
       owner_nickname: document.getElementById('o_nick').value,
@@ -229,25 +297,18 @@
       owner_hea: document.getElementById('o_hea').value
     };
 
-    const { error } = await sbClient.from('owner_profile').upsert([d]);
-    
-    if (!error) {
-      moveNext();
-    } else {
-      alert("Database error: " + error.message);
-      btn.disabled = false;
-      spn.style.display = 'none';
-      txt.innerText = 'Save & Continue';
-    }
+    const { error } = await sb.from('owner_profile').upsert([payload]);
+    if (!error) moveNext();
+    else { alert(error.message); btn.disabled = false; spin.style.display = 'none'; }
   }
 
   async function moveNext() {
     currentStep++;
-    await sbClient.from('user_profiles').update({ current_step: currentStep }).eq('id', user.id);
-    refreshUI();
+    await sb.from('user_profiles').update({ current_step: currentStep }).eq('id', user.id);
+    renderSteps();
   }
 
-  function handleLogout() { sbClient.auth.signOut().then(() => window.location.href = 'login.php'); }
+  function handleLogout() { sb.auth.signOut().then(() => window.location.href = 'login.php'); }
   window.onload = init;
 </script>
 </body>
