@@ -147,7 +147,22 @@
             </div>
           </div>
         </div>
-        </aside>
+
+          <div class="card">
+            <h3 style="margin-top: 0; font-size: 14px; font-weight: 800;">File Repository</h3>
+            <div class="repo-grid">
+              <div class="repo-item">
+                <span id="filesUploaded" style="font-size: 20px; font-weight: 800; display: block; color: var(--accent);">0</span>
+                <span style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Uploaded</span>
+              </div>
+              <div class="repo-item">
+                <span id="filesPending" style="font-size: 20px; font-weight: 800; display: block; color:#f1c40f">0</span>
+                <span style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Pending Review</span>
+              </div>
+            </div>
+          </div>
+       </aside>
+
     </main>
   </div>
 </div>
@@ -255,8 +270,8 @@
           <div class="input-group"><label>Enterprise Name</label><input id="c_name"></div>
           <div class="input-group" style="grid-column: span 2;"><label>Enterprise Address</label><input id="c_addr"></div>
           
-          <div class="input-group"><label>Latitude</label><input type="number" step="any" id="c_lat" placeholder="10.7202"></div>
-          <div class="input-group"><label>Longitude</label><input type="number" step="any" id="c_long" placeholder="122.5621"></div>
+          <div class="input-group"><label>Latitude</label><input type="number" step="any" id="c_lat" placeholder="e.g. 14.5995"></div>
+          <div class="input-group"><label>Longitude</label><input type="number" step="any" id="c_long" placeholder="e.g. 120.9842"></div>
           
           <div class="input-group"><label>Contact Person</label><input id="c_cp"></div>
           <div class="input-group"><label>Enterprise Email</label><input type="email" id="c_email"></div>
@@ -295,42 +310,46 @@
   }
 
   async function saveBusinessInfo() {
-    const btn = document.getElementById('saveBizBtn');
-    btn.disabled = true; btn.innerText = "Saving...";
+  const btn = document.getElementById('saveBizBtn');
+  btn.disabled = true; btn.innerText = "Saving...";
 
-    const payload = {
-      user_id: user.id, 
-      enterprise_name: document.getElementById('c_name').value,
-      enterprise_address: document.getElementById('c_addr').value,
-      enterprise_lat: parseFloat(document.getElementById('c_lat').value) || 0, // Added Latitude
-      enterprise_long: parseFloat(document.getElementById('c_long').value) || 0, // Added Longitude
-      contact_person: document.getElementById('c_cp').value,
-      enterprise_email: document.getElementById('c_email').value,
-      year_established: parseInt(document.getElementById('c_year').value) || 0,
-      current_capitalization: parseFloat(document.getElementById('c_cap').value) || 0,
-      organization_type: document.getElementById('c_org').value,
-      business_type: document.getElementById('c_btype').value,
-      msme_type: document.getElementById('c_mtype').value,
-      industry_sector: document.getElementById('c_sector').value,
-      DTI_reg_num: document.getElementById('c_dti').value,
-      SEC_reg_num: document.getElementById('c_sec').value,
-      CDA_reg_num: document.getElementById('c_cda').value,
-      others: document.getElementById('c_other').value,
-      regular_direct_emp: parseInt(document.getElementById('c_reg').value) || 0,
-      contractual_direct_emp: parseInt(document.getElementById('c_con').value) || 0
-    };
+  const payload = {
+    user_id: user.id, 
+    enterprise_name: document.getElementById('c_name').value,
+    enterprise_address: document.getElementById('c_addr').value,
+    enterprise_lat: parseFloat(document.getElementById('c_lat').value) || 0,
+    enterprise_long: parseFloat(document.getElementById('c_long').value) || 0,
+    contact_person: document.getElementById('c_cp').value,
+    enterprise_email: document.getElementById('c_email').value,
+    // Note: Schema says 'date', but you mentioned changing to int4
+    year_established: parseInt(document.getElementById('c_year').value) || 0, 
+    current_capitalization: parseFloat(document.getElementById('c_cap').value) || 0,
+    organization_type: document.getElementById('c_org').value,
+    business_type: document.getElementById('c_btype').value,
+    msme_type: document.getElementById('c_mtype').value,
+    industry_sector: document.getElementById('c_sector').value,
+    DTI_reg_num: document.getElementById('c_dti').value,
+    SEC_reg_num: document.getElementById('c_sec').value,
+    CDA_reg_num: document.getElementById('c_cda').value,
+    others: document.getElementById('c_other').value,
+    // MATCHING SCHEMA NAMES EXACTLY
+    regular_direct_emp: parseInt(document.getElementById('c_reg').value) || 0,
+    contractual_direct_emp: parseInt(document.getElementById('c_con').value) || 0 
+  };
 
-    const { error } = await sb.from('company_profile').upsert(payload, { onConflict: 'user_id' });
-    
-    if (!error) {
-      moveNext();
-    } else {
-      console.error(error);
-      alert("Error: " + error.message);
-      btn.disabled = false;
-      btn.innerText = "Save & Continue";
-    }
+  const { error } = await sb
+    .from('company_profile')
+    .upsert(payload, { onConflict: 'user_id' });
+
+  if (!error) {
+    moveNext();
+  } else {
+    console.error("Detailed Error:", error);
+    alert("Error: " + error.message);
+    btn.disabled = false;
+    btn.innerText = "Save & Continue";
   }
+}
 
   async function moveNext() {
     currentStep++;
