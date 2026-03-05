@@ -326,6 +326,49 @@
     renderSteps();
   }
 
+  async function saveBusinessInfo() {
+  const btn = document.getElementById('saveBizBtn');
+  btn.disabled = true; 
+  btn.innerText = "Saving Enterprise Data...";
+
+  // We omit 'id' so the DB can auto-generate the int8 primary key
+  // We add 'user_id' so the RLS policy knows who owns this row
+  const payload = {
+    user_id: user.id, 
+    enterprise_name: document.getElementById('c_name').value,
+    enterprise_address: document.getElementById('c_addr').value,
+    contact_person: document.getElementById('c_cp').value,
+    email: document.getElementById('c_email').value,
+    year_established: parseInt(document.getElementById('c_year').value) || 0,
+    current_capitalization: parseFloat(document.getElementById('c_cap').value) || 0,
+    organization_type: document.getElementById('c_org').value,
+    business_type: document.getElementById('c_btype').value,
+    msme_type: document.getElementById('c_mtype').value,
+    industry_sector: document.getElementById('c_sector').value,
+    DTI_reg_num: document.getElementById('c_dti').value,
+    SEC_reg_num: document.getElementById('c_sec').value,
+    CDA_reg_num: document.getElementById('c_cda').value,
+    others: document.getElementById('c_other').value,
+    regular_direct_emp: parseInt(document.getElementById('c_reg').value) || 0,
+    contractual_direct_emp: parseInt(document.getElementById('c_con').value) || 0
+  };
+
+  // Use .upsert() with 'onConflict' targeting user_id 
+  // This ensures one user only has one company profile
+  const { error } = await sb
+    .from('company_profile')
+    .upsert(payload, { onConflict: 'user_id' });
+  
+  if (!error) {
+    moveNext();
+  } else {
+    console.error("Supabase Error:", error);
+    alert("Error: " + error.message);
+    btn.disabled = false;
+    btn.innerText = "Save & Continue";
+  }
+}
+
   function toggleTheme() { document.body.classList.toggle('light-theme'); }
   function handleLogout() { sb.auth.signOut().then(() => window.location.href = 'login.php'); }
   
