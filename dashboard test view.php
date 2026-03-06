@@ -309,54 +309,37 @@ async function loadAdminData(userId) {
       </div>
     </div>`;
   
+// Add 'async' here!
 async function saveAdminEdits(userId) {
     const btn = document.querySelector('button[onclick*="saveAdminEdits"]');
     btn.innerText = "Saving...";
 
-    const ownerUpdates = {
-        owner_nickname: document.getElementById('adm_o_nick').value,
-        owner_sex: document.getElementById('adm_o_sex').value,
-        owner_pob: document.getElementById('adm_o_pob').value
+    const updates = {
+        owner: {
+            owner_nickname: document.getElementById('adm_o_nick').value,
+            owner_sex: document.getElementById('adm_o_sex').value,
+            owner_pob: document.getElementById('adm_o_pob').value
+        },
+        company: {
+            enterprise_name: document.getElementById('adm_c_name').value,
+            contact_number: document.getElementById('adm_c_phone').value,
+            enterprise_email: document.getElementById('adm_c_email').value
+        }
     };
 
-    const companyUpdates = {
-        enterprise_name: document.getElementById('adm_c_name').value,
-        // CHECK YOUR TABLE: Is it 'contact_numb' or 'contact_number'? 
-        // Based on your earlier error, it is likely 'contact_numb'
-        contact_number: document.getElementById('adm_c_phone').value, 
-        // CHECK YOUR TABLE: Is it 'email' or 'enterprise_email'?
-        enterprise_email: document.getElementById('adm_c_email').value 
-    };
+    // Now 'await' will work because the function is 'async'
+    const res1 = await sb.from('owner_profile').update(updates.owner).eq('owner_ID', userId);
+    const res2 = await sb.from('company_profile').update(updates.company).eq('user_id', userId);
 
-    // Execute updates
-    const res1 = await sb.from('owner_profile').update(ownerUpdates).eq('owner_ID', userId);
-    const res2 = await sb.from('company_profile').update(companyUpdates).eq('user_id', userId);
-
-    if (res2.error) {
-        console.error("Company Table Error Detail:", res2.error);
-        alert(`Company Update Failed: ${res2.error.message}`);
-    } else if (res1.error) {
-        alert(`Owner Update Failed: ${res1.error.message}`);
+    if (res1.error || res2.error) {
+        console.error("Update Error:", res1.error || res2.error);
+        alert("Update failed! check console for RLS or Schema errors.");
     } else {
-        alert("All changes saved successfully!");
+        alert("Changes saved successfully!");
         closeAdminView();
         fetchMSMEUsers();
     }
     btn.innerText = "Save All Changes";
-}
-
-  // Perform updates
-  const res1 = await sb.from('owner_profile').update(updates.owner).eq('owner_ID', userId);
-  const res2 = await sb.from('company_profile').update(updates.company).eq('user_id', userId);
-
-  if (res1.error || res2.error) {
-    console.error("Owner Update Error:", res1.error);
-    console.error("Company Update Error:", res2.error);
-    alert("Update failed! check console for RLS or Schema errors.");
-  } else {
-    alert("Changes saved successfully!");
-  }
-  btn.innerText = "Save All Changes";
 }
 
 </script>
