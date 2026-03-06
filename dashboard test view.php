@@ -247,10 +247,9 @@ async function loadAdminData(userId) {
 
   if (company) {
     document.getElementById('adm_c_name').value = company.enterprise_name || "";
-    // Corrected to match your Screenshot (145).png schema: contact_numb
-    document.getElementById('adm_c_phone').value = company.contact_number || ""; 
-    document.getElementById('adm_c_email').value = company.email || ""; // Schema shows 'email', not 'enterprise_email'
-  }
+    document.getElementById('adm_c_phone').value = company.contact_number || ""; // Use exact schema name
+    document.getElementById('adm_c_email').value = company.enterprise_email || "";        // Use exact schema name
+}
 }
 
   function renderAdminReviewView(userId) {
@@ -309,24 +308,42 @@ async function loadAdminData(userId) {
         <button style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; flex: 1; cursor: pointer;" onclick="closeAdminView()">Cancel</button>
       </div>
     </div>`;
-  }
-
-async function saveAdminEdits(userId) {
-  const btn = event.target; // The "Save All Changes" button
-  btn.innerText = "Saving...";
   
-  const updates = {
-    owner: {
-      owner_nickname: document.getElementById('adm_o_nick').value,
-      owner_sex: document.getElementById('adm_o_sex').value,
-      owner_pob: document.getElementById('adm_o_pob').value
-    },
-    company: {
-      enterprise_name: document.getElementById('adm_c_name').value,
-      contact_number: document.getElementById('adm_c_phone').value, // Matches schema 'contact_numb'
-      email: document.getElementById('adm_c_email').value // Matches schema 'email'
+async function saveAdminEdits(userId) {
+    const btn = document.querySelector('button[onclick*="saveAdminEdits"]');
+    btn.innerText = "Saving...";
+
+    const ownerUpdates = {
+        owner_nickname: document.getElementById('adm_o_nick').value,
+        owner_sex: document.getElementById('adm_o_sex').value,
+        owner_pob: document.getElementById('adm_o_pob').value
+    };
+
+    const companyUpdates = {
+        enterprise_name: document.getElementById('adm_c_name').value,
+        // CHECK YOUR TABLE: Is it 'contact_numb' or 'contact_number'? 
+        // Based on your earlier error, it is likely 'contact_numb'
+        contact_number: document.getElementById('adm_c_phone').value, 
+        // CHECK YOUR TABLE: Is it 'email' or 'enterprise_email'?
+        enterprise_email: document.getElementById('adm_c_email').value 
+    };
+
+    // Execute updates
+    const res1 = await sb.from('owner_profile').update(ownerUpdates).eq('owner_ID', userId);
+    const res2 = await sb.from('company_profile').update(companyUpdates).eq('user_id', userId);
+
+    if (res2.error) {
+        console.error("Company Table Error Detail:", res2.error);
+        alert(`Company Update Failed: ${res2.error.message}`);
+    } else if (res1.error) {
+        alert(`Owner Update Failed: ${res1.error.message}`);
+    } else {
+        alert("All changes saved successfully!");
+        closeAdminView();
+        fetchMSMEUsers();
     }
-  };
+    btn.innerText = "Save All Changes";
+}
 
   // Perform updates
   const res1 = await sb.from('owner_profile').update(updates.owner).eq('owner_ID', userId);
