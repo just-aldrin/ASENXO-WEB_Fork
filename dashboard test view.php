@@ -342,6 +342,8 @@ async function saveAdminEdits(userId) {
     btn.innerText = "Save All Changes";
 }
 
+  }
+
 </script>
 </body>
 </html>
