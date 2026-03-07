@@ -481,14 +481,14 @@ async function saveStep5() {
       others: document.getElementById('c_oth_n').value || null,
       others_reg_date: document.getElementById('c_oth_d').value || null,
 
-      male_dir_prod: parseInt(document.getElementById('m_d_p').value) || 0,
-      female_dir_prod: parseInt(document.getElementById('f_d_p').value) || 0,
-      male_dir_nonprod: parseInt(document.getElementById('m_d_np').value) || 0,
-      female_dir_nonprod: parseInt(document.getElementById('f_d_np').value) || 0,
-      male_ind_prod: parseInt(document.getElementById('m_i_p').value) || 0,
-      female_ind_prod: parseInt(document.getElementById('f_i_p').value) || 0,
-      male_ind_nonprod: parseInt(document.getElementById('m_i_np').value) || 0,
-      female_ind_nonprod: parseInt(document.getElementById('f_i_np').value) || 0
+      emp_direct_prod_male: parseInt(document.getElementById('m_d_p').value) || 0,
+      emp_direct_prod_female: parseInt(document.getElementById('f_d_p').value) || 0,
+      emp_direct_nonprod_male: parseInt(document.getElementById('m_d_np').value) || 0,
+      emp_direct_nonprod_female: parseInt(document.getElementById('f_d_np').value) || 0,
+      emp_indirect_prod_male: parseInt(document.getElementById('m_i_p').value) || 0,
+      emp_indirect_prod_female: parseInt(document.getElementById('f_i_p').value) || 0,
+      emp_indirect_nonprod_male: parseInt(document.getElementById('m_i_np').value) || 0,
+      emp_idnirect_nonprod_female: parseInt(document.getElementById('f_i_np').value) || 0
     };
     // Using update instead of upsert so we don't accidentally wipe Step 5 data
     const { error } = await sb.from('company_profile').update(payload).eq('user_id', user.id);
