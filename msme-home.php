@@ -479,7 +479,7 @@ async function saveStep5() {
       CDA_reg_num: document.getElementById('c_cda_n').value || null,
       cda_reg_date: document.getElementById('c_cda_d').value || null,
       others: document.getElementById('c_oth_n').value || null,
-      others_reg_date: document.getElementById('c_oth_d').value || null,
+      other_reg_date: document.getElementById('c_oth_d').value || null,
 
       emp_direct_prod_male: parseInt(document.getElementById('m_d_p').value) || 0,
       emp_direct_prod_female: parseInt(document.getElementById('f_d_p').value) || 0,
