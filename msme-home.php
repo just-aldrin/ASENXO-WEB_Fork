@@ -89,29 +89,17 @@
     .repo-item { padding: 15px; background: rgba(128,128,128,0.05); border-radius: 10px; text-align: center; border: 1px solid var(--border-color); }
 
     .matrix-input {
-  width: 90%;
-  background: var(--input-bg) !important;
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  padding: 8px;
-  border-radius: 6px;
-  text-align: center;
-  font-family: inherit;
-  font-weight: 600;
-  transition: border-color 0.2s;
-}
-
-.matrix-input:focus {
-  border-color: var(--accent);
-  outline: none;
-}
-
-/* Removes arrows from number inputs for a cleaner table look */
-.matrix-input::-webkit-outer-spin-button,
-.matrix-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
+      width: 100%;
+      background: var(--input-bg) !important;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+      font-family: inherit;
+      font-weight: 600;
+    }
+    .matrix-input:focus { border-color: var(--accent); outline: none; }
   </style>
 </head>
 <body>
@@ -208,7 +196,7 @@
     { id: 3, title: "Owner Information", desc: "Detailed personal data" },
     { id: 4, title: "Profile Image", desc: "Upload profile image" },
     { id: 5, title: "Business Information", desc: "Enterprise details" },
-    { id: 6, title: "Complete Business Information", desc: "Business details" },
+    { id: 6, title: "Complete Business Information", desc: "Registrations & Employment" },
     { id: 7, title: "Account Confirmation", desc: "Review and confirm" },
     { id: 8, title: "Submit Required Documents", desc: "PDF, images" },
     { id: 9, title: "Application Status", desc: "Pending review" },
@@ -245,6 +233,19 @@
       const isDone = s.id < currentStep;
       const isActive = s.id === currentStep;
       
+      let stepContent = '';
+      if (isActive) {
+        if (s.id === 3) stepContent = renderStep3Owner();
+        else if (s.id === 4) stepContent = renderStep4Image();
+        else if (s.id === 5) stepContent = renderStep5Business();
+        else if (s.id === 6) stepContent = renderStep6CompleteBusiness();
+        else if (s.id === 7) stepContent = renderStep7Dummy("Confirm Application Details", "Review your data above and click confirm.");
+        else if (s.id === 8) stepContent = renderStep8Dummy();
+        else if (s.id === 9) stepContent = renderStep9Dummy();
+        else if (s.id === 10) stepContent = renderStep10Dummy();
+        else if (s.id === 11) stepContent = renderStep11Dummy();
+      }
+
       return `
         <li style="display: flex; gap: 20px; margin-bottom: 30px;">
           <div class="step-icon ${isDone ? 'completed' : (isActive ? 'current' : '')}">
@@ -253,18 +254,17 @@
           <div style="flex: 1;">
             <div style="font-size: 15px; font-weight: 700; color: ${isActive ? 'var(--accent)' : 'inherit'}">${s.title}</div>
             <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">${s.desc}</div>
-            ${isActive && s.id === 3 ? renderOwnerForm() : ''}
-            ${isActive && s.id === 4 ? renderImageForm() : ''}
-            ${isActive && s.id === 5 ? renderBusinessForm() : ''}
+            ${stepContent}
           </div>
         </li>
       `;
     }).join('');
   }
 
-  function renderOwnerForm() {
+  // --- STEP 3: OWNER INFO ---
+  function renderStep3Owner() {
     return `
-      <div style="background: rgba(128,128,128,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+      <div style="background: rgba(128,128,128,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-top:15px;">
         <div class="form-grid">
           <div class="input-group"><label>Nickname</label><input id="o_nick" placeholder="e.g. aldrin"></div>
           <div class="input-group"><label>Date of birth</label><input type="date" id="o_dob"></div>
@@ -277,181 +277,9 @@
       </div>`;
   }
 
-  function renderImageForm() {
-    return `
-      <div style="text-align: center; background: rgba(128,128,128,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px;">
-        <div id="imagePreview"><i class="fas fa-user" style="font-size: 30px; color: #333;"></i></div>
-        <input type="file" id="profileFile" accept="image/*" onchange="previewImg(this)" style="margin-bottom: 15px; font-size: 11px;">
-        <button class="primary-btn" id="upBtn" onclick="uploadImg()">Upload Photo</button>
-      </div>`;
-  }
-
-  function renderBusinessForm() {
-    return `
-      <div style="background: rgba(128,128,128,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; margin-top: 15px;">
-        
-        <h4 style="margin: 0 0 20px 0; font-size: 14px; color: var(--accent); font-weight: 800;">Enterprise Details</h4>
-        <div class="form-grid">
-          <div class="input-group"><label>Enterprise ID</label><input id="c_eid" placeholder="Auto-generated" disabled></div>
-          <div class="input-group"><label>Enterprise Name</label><input id="c_name"></div>
-          <div class="input-group" style="grid-column: span 2;"><label>Enterprise Address</label><input id="c_addr"></div>
-          
-          <div class="input-group"><label>Latitude</label><input type="number" step="any" id="c_lat" placeholder="e.g. 14.5995"></div>
-          <div class="input-group"><label>Longitude</label><input type="number" step="any" id="c_long" placeholder="e.g. 120.9842"></div>
-          
-          <div class="input-group"><label>Contact Person</label><input id="c_cp"></div>
-          
-          <div class="input-group"><label>Contact Number</label><input type="tel" id="c_phone" placeholder="e.g. 09123456789"></div>
-          
-          <div class="input-group"><label>Enterprise Email</label><input type="email" id="c_email"></div>
-          <div class="input-group"><label>Year Established</label><input type="number" id="c_year" value="2024"></div>
-          <div class="input-group"><label>Current Capitalization</label><input type="number" step="0.01" id="c_cap"></div>
-          
-          <div class="input-group"><label>Organization Type</label>
-            <select id="c_org">
-              <option>Sole Proprietorship</option>
-              <option>Partnership</option>
-              <option>Cooperative</option>
-              <option>Corporation</option>
-            </select>
-          </div>
-          <div class="input-group"><label>Business Type</label>
-              <select id="c_btype">
-                <option>Profit</option>
-                <option>Non-Profit</option>
-              </select>
-          </div>
-          <div class="input-group"><label>MSME Type</label>
-            <select id="c_mtype">
-              <option>Micro</option>
-              <option>Small</option>
-              <option>Medium</option>
-              <option>Enterprise</option>
-            </select>
-          </div>
-          <div class="input-group"><label>Industry Sector</label><input id="c_sector"></div>
-        </div>
-
-        <div style="margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 25px;">
-          <h4 style="margin-bottom: 20px; font-size: 14px; color: var(--accent); font-weight: 800; text-transform: uppercase;">Regulatory Registrations</h4>
-          <div class="form-grid">
-            <div class="input-group"><label>DTI Registration No.</label><input id="c_dti"></div>
-            <div class="input-group"><label>Registration Date</label><input type="date" id="c_dti_date"></div>
-            
-            <div class="input-group"><label>SEC Registration No.</label><input id="c_sec"></div>
-            <div class="input-group"><label>Registration Date</label><input type="date" id="c_sec_date"></div>
-            
-            <div class="input-group"><label>CDA Registration No.</label><input id="c_cda"></div>
-            <div class="input-group"><label>Registration Date</label><input type="date" id="c_cda_date"></div>
-            
-            <div class="input-group"><label>Other</label><input id="c_other" placeholder="e.g. Mayor's Permit"></div>
-            <div class="input-group"><label>Registration Date</label><input type="date" id="c_other_date"></div>
-          </div>
-        </div>
-
-        <div style="margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 25px;">
-          <h4 style="margin-bottom: 20px; font-size: 14px; color: var(--accent); font-weight: 800;">Employment Information</h4>
-          <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; min-width: 400px;">
-              <thead>
-                <tr style="text-align: left;">
-                  <th style="padding: 10px 5px; font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Type of Employment</th>
-                  <th style="padding: 10px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; text-align: center;">Male</th>
-                  <th style="padding: 10px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; text-align: center;">Female</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td colspan="3" style="padding: 15px 5px 10px; font-size: 13px; font-weight: 700; color: var(--text-main);">Direct Workers</td></tr>
-                <tr>
-                  <td style="padding: 5px; font-size: 12px; color: var(--text-muted);">Production</td>
-                  <td style="padding: 5px;"><input type="number" id="e_dp_m" class="matrix-input" value="0"></td>
-                  <td style="padding: 5px;"><input type="number" id="e_dp_f" class="matrix-input" value="0"></td>
-                </tr>
-                <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 5px 5px 15px; font-size: 12px; color: var(--text-muted);">Non-Production</td>
-                  <td style="padding: 5px 5px 15px;"><input type="number" id="e_dnp_m" class="matrix-input" value="0"></td>
-                  <td style="padding: 5px 5px 15px;"><input type="number" id="e_dnp_f" class="matrix-input" value="0"></td>
-                </tr>
-                <tr><td colspan="3" style="padding: 25px 5px 10px; font-size: 13px; font-weight: 700; color: var(--text-main);">Indirect / Contract Workers</td></tr>
-                <tr>
-                  <td style="padding: 5px; font-size: 12px; color: var(--text-muted);">Production</td>
-                  <td style="padding: 5px;"><input type="number" id="e_ip_m" class="matrix-input" value="0"></td>
-                  <td style="padding: 5px;"><input type="number" id="e_ip_f" class="matrix-input" value="0"></td>
-                </tr>
-                <tr>
-                  <td style="padding: 5px; font-size: 12px; color: var(--text-muted);">Non-Production</td>
-                  <td style="padding: 5px;"><input type="number" id="e_inp_m" class="matrix-input" value="0"></td>
-                  <td style="padding: 5px;"><input type="number" id="e_inp_f" class="matrix-input" value="0"></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-        <button class="primary-btn" id="saveBizBtn" style="margin-top: 40px;" onclick="saveBusinessInfo()">Save & Continue</button>
-      </div>`;
-  }
-
-  async function saveBusinessInfo() {
-  const btn = document.getElementById('saveBizBtn');
-  btn.disabled = true; btn.innerText = "Saving...";
-
-  const payload = {
-    user_id: user.id, 
-    enterprise_name: document.getElementById('c_name').value,
-    enterprise_address: document.getElementById('c_addr').value,
-    enterprise_lat: parseFloat(document.getElementById('c_lat').value) || 0,
-    enterprise_long: parseFloat(document.getElementById('c_long').value) || 0,
-    contact_person: document.getElementById('c_cp').value,
-    contact_number: document.getElementById('c_phone').value,
-    enterprise_email: document.getElementById('c_email').value,
-    year_established: parseInt(document.getElementById('c_year').value) || 0, 
-    current_capitalization: parseFloat(document.getElementById('c_cap').value) || 0,
-    organization_type: document.getElementById('c_org').value,
-    business_type: document.getElementById('c_btype').value,
-    msme_type: document.getElementById('c_mtype').value,
-    industry_sector: document.getElementById('c_sector').value,
-    DTI_reg_num: document.getElementById('c_dti').value,
-    dti_reg_date: document.getElementById('c_dti_date').value || null,
-    SEC_reg_num: document.getElementById('c_sec').value,
-    sec_reg_date: document.getElementById('c_sec_date').value || null,
-    CDA_reg_num: document.getElementById('c_cda').value,
-    cda_reg_date: document.getElementById('c_cda_date').value || null,
-    others: document.getElementById('c_other').value,
-    other_reg_date: document.getElementById('c_other_date').value || null,
-    emp_direct_prod_male: parseInt(document.getElementById('e_dp_m').value) || 0,
-    emp_direct_prod_female: parseInt(document.getElementById('e_dp_f').value) || 0,
-    emp_direct_nonprod_male: parseInt(document.getElementById('e_dnp_m').value) || 0,
-    emp_direct_nonprod_female: parseInt(document.getElementById('e_dnp_f').value) || 0,
-    emp_indirect_prod_male: parseInt(document.getElementById('e_ip_m').value) || 0,
-    emp_indirect_prod_female: parseInt(document.getElementById('e_ip_f').value) || 0,
-    emp_indirect_nonprod_male: parseInt(document.getElementById('e_inp_m').value) || 0,
-    emp_indirect_nonprod_female: parseInt(document.getElementById('e_inp_f').value) || 0 
-  };
-
-  const { error } = await sb
-    .from('company_profile')
-    .upsert(payload, { onConflict: 'user_id' });
-
-  if (!error) {
-    moveNext();
-  } else {
-    console.error("Detailed Error:", error);
-    alert("Error: " + error.message);
-    btn.disabled = false;
-    btn.innerText = "Save & Continue";
-  }
-}
-
-  async function moveNext() {
-    currentStep++;
-    await sb.from('user_profiles').update({ current_step: currentStep }).eq('id', user.id);
-    renderSteps();
-  }
-
   async function saveOwnerInfo() {
     const btn = document.getElementById('saveBtn');
-    btn.disabled = true; 
+    btn.disabled = true; btn.innerText = "Saving...";
     const payload = {
       owner_ID: user.id,
       owner_name: `${profile.first_name} ${profile.last_name}`,
@@ -464,8 +292,17 @@
       owner_email: user.email
     };
     const { error } = await sb.from('owner_profile').upsert([payload]);
-    if (!error) moveNext();
-    else { alert(error.message); btn.disabled = false; }
+    if (!error) moveNext(); else { alert(error.message); btn.disabled = false; }
+  }
+
+  // --- STEP 4: PROFILE IMAGE ---
+  function renderStep4Image() {
+    return `
+      <div style="text-align: center; background: rgba(128,128,128,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; margin-top:15px;">
+        <div id="imagePreview"><i class="fas fa-user" style="font-size: 30px; color: #333;"></i></div>
+        <input type="file" id="profileFile" accept="image/*" onchange="previewImg(this)" style="margin-bottom: 15px; font-size: 11px;">
+        <button class="primary-btn" id="upBtn" onclick="uploadImg()">Upload & Continue</button>
+      </div>`;
   }
 
   function previewImg(input) {
@@ -478,13 +315,238 @@
 
   async function uploadImg() {
     const file = document.getElementById('profileFile').files[0];
-    if (!file) return alert("Select a file first");
+    if (!file) { moveNext(); return; } // Allow skip if no file
+    const btn = document.getElementById('upBtn');
+    btn.disabled = true; btn.innerText = "Uploading...";
     const filePath = `${user.id}/${Date.now()}_${file.name}`;
     const { data, error } = await sb.storage.from('avatars').upload(filePath, file);
     if (!error) {
       const { data: { publicUrl } } = sb.storage.from('avatars').getPublicUrl(filePath);
       await sb.from('owner_profile').update({ profile_pic_url: publicUrl }).eq('owner_ID', user.id);
       moveNext();
+    } else { alert("Upload failed"); btn.disabled = false; btn.innerText = "Upload & Continue"; }
+  }
+
+  // --- STEP 5: ENTERPRISE DETAILS ---
+  // --- STEP 5: ENTERPRISE DETAILS (UPDATED) ---
+function renderStep5Business() {
+  return `
+    <div style="background: rgba(128,128,128,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; margin-top: 15px;">
+      <h4 style="margin: 0 0 20px 0; font-size: 14px; color: var(--accent); font-weight: 800;">Enterprise Details</h4>
+      <div class="form-grid">
+        <div class="input-group" style="grid-column: span 2;"><label>Enterprise Name</label><input id="c_name"></div>
+        <div class="input-group"><label>Contact Number</label><input type="tel" id="c_phone"></div>
+        <div class="input-group"><label>Enterprise Email</label><input type="email" id="c_email"></div>
+        
+        <div class="input-group"><label>MSME Type</label>
+          <select id="c_mtype">
+            <option value="Micro">Micro</option>
+            <option value="Small">Small</option>
+            <option value="Medium">Medium</option>
+          </select>
+        </div>
+        <div class="input-group"><label>Industry Sector</label><input id="c_sector"></div>
+
+        <div class="input-group" style="grid-column: span 2;">
+          <label>Business Activities</label>
+          <textarea id="c_activities" class="auto-expand" placeholder="Describe your primary business operations..." oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
+        </div>
+
+        <div class="input-group" style="grid-column: span 2;">
+          <label>Products / Services</label>
+          <textarea id="c_products" class="auto-expand" placeholder="List your main products or service offerings..." oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
+        </div>
+
+        <div class="input-group" style="grid-column: span 2;">
+          <label>Brief Enterprise Background</label>
+          <textarea id="c_background" class="auto-expand" placeholder="Tell us about the history and mission of your business..." oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
+        </div>
+      </div>
+      <button class="primary-btn" id="saveStep5Btn" style="margin-top: 20px;" onclick="saveStep5()">Save & Continue</button>
+    </div>
+    
+    <style>
+      .auto-expand {
+        width: 100%;
+        min-height: 60px; /* Initial size for ~2 sentences */
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        padding: 10px;
+        border-radius: 8px;
+        font-family: inherit;
+        resize: none; /* Disables manual resize to keep UI clean */
+        overflow-y: hidden;
+        box-sizing: border-box;
+      }
+      .auto-expand:focus { border-color: var(--accent); outline: none; }
+    </style>`;
+}
+
+async function saveStep5() {
+  const btn = document.getElementById('saveStep5Btn');
+  btn.disabled = true; btn.innerText = "Saving...";
+  
+  const payload = {
+    user_id: user.id,
+    enterprise_name: document.getElementById('c_name').value,
+    contact_number: document.getElementById('c_phone').value,
+    enterprise_email: document.getElementById('c_email').value,
+    msme_type: document.getElementById('c_mtype').value,
+    industry_sector: document.getElementById('c_sector').value,
+    // New Fields
+    business_activities: document.getElementById('c_activities').value,
+    products_services: document.getElementById('c_products').value,
+    enterprise_background: document.getElementById('c_background').value
+  };
+
+  const { error } = await sb.from('company_profile').upsert(payload, { onConflict: 'user_id' });
+  
+  if (!error) {
+    moveNext();
+  } else {
+    alert("Error: " + error.message);
+    btn.disabled = false;
+    btn.innerText = "Save & Continue";
+  }
+}
+  // --- STEP 6: COMPLETE BUSINESS (Registrations & Employment) ---
+  function renderStep6CompleteBusiness() {
+    return `
+      <div style="background: rgba(128,128,128,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; margin-top: 15px;">
+        
+        <h4 style="margin: 0 0 20px 0; font-size: 14px; color: var(--accent); font-weight: 800;">Regulatory Registrations</h4>
+        <div class="form-grid">
+          <div class="input-group"><label>DTI Registration No.</label><input id="c_dti_n"></div>
+          <div class="input-group"><label>Registration Date</label><input type="date" id="c_dti_d"></div>
+          <div class="input-group"><label>SEC Registration No.</label><input id="c_sec_n"></div>
+          <div class="input-group"><label>Registration Date</label><input type="date" id="c_sec_d"></div>
+          <div class="input-group"><label>CDA Registration No.</label><input id="c_cda_n"></div>
+          <div class="input-group"><label>Registration Date</label><input type="date" id="c_cda_d"></div>
+          <div class="input-group"><label>Other (e.g. Mayor's Permit)</label><input id="c_oth_n"></div>
+          <div class="input-group"><label>Registration Date</label><input type="date" id="c_oth_d"></div>
+        </div>
+
+        <h4 style="margin: 30px 0 20px 0; font-size: 14px; color: var(--accent); font-weight: 800; border-top: 1px solid var(--border-color); padding-top:20px;">Employment Information</h4>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; min-width: 400px;">
+            <thead>
+              <tr style="text-align: left;">
+                <th style="padding: 10px 5px; font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Type of Employment</th>
+                <th style="padding: 10px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; text-align: center;">Male</th>
+                <th style="padding: 10px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; text-align: center;">Female</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="3" style="padding: 15px 5px 10px; font-size: 13px; font-weight: 700;">Direct Workers</td></tr>
+              <tr>
+                <td style="padding: 5px; font-size: 12px; color: var(--text-muted);">Production</td>
+                <td style="padding: 5px;"><input type="number" id="m_d_p" class="matrix-input" value="0"></td>
+                <td style="padding: 5px;"><input type="number" id="f_d_p" class="matrix-input" value="0"></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 5px 5px 15px; font-size: 12px; color: var(--text-muted);">Non-Production</td>
+                <td style="padding: 5px 5px 15px;"><input type="number" id="m_d_np" class="matrix-input" value="0"></td>
+                <td style="padding: 5px 5px 15px;"><input type="number" id="f_d_np" class="matrix-input" value="0"></td>
+              </tr>
+              
+              <tr><td colspan="3" style="padding: 25px 5px 10px; font-size: 13px; font-weight: 700;">Indirect / Contract Workers</td></tr>
+              <tr>
+                <td style="padding: 5px; font-size: 12px; color: var(--text-muted);">Production</td>
+                <td style="padding: 5px;"><input type="number" id="m_i_p" class="matrix-input" value="0"></td>
+                <td style="padding: 5px;"><input type="number" id="f_i_p" class="matrix-input" value="0"></td>
+              </tr>
+              <tr>
+                <td style="padding: 5px; font-size: 12px; color: var(--text-muted);">Non-Production</td>
+                <td style="padding: 5px;"><input type="number" id="m_i_np" class="matrix-input" value="0"></td>
+                <td style="padding: 5px;"><input type="number" id="f_i_np" class="matrix-input" value="0"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <button class="primary-btn" id="saveStep6Btn" style="margin-top: 30px;" onclick="saveStep6()">Save Registrations & Continue</button>
+      </div>`;
+  }
+
+  async function saveStep6() {
+    const btn = document.getElementById('saveStep6Btn');
+    btn.disabled = true; btn.innerText = "Saving...";
+    const payload = {
+      dti_reg_num: document.getElementById('c_dti_n').value || null,
+      dti_reg_date: document.getElementById('c_dti_d').value || null,
+      sec_reg_num: document.getElementById('c_sec_n').value || null,
+      sec_reg_date: document.getElementById('c_sec_d').value || null,
+      cda_reg_num: document.getElementById('c_cda_n').value || null,
+      cda_reg_date: document.getElementById('c_cda_d').value || null,
+      others_reg_num: document.getElementById('c_oth_n').value || null,
+      others_reg_date: document.getElementById('c_oth_d').value || null,
+
+      male_dir_prod: parseInt(document.getElementById('m_d_p').value) || 0,
+      female_dir_prod: parseInt(document.getElementById('f_d_p').value) || 0,
+      male_dir_nonprod: parseInt(document.getElementById('m_d_np').value) || 0,
+      female_dir_nonprod: parseInt(document.getElementById('f_d_np').value) || 0,
+      male_ind_prod: parseInt(document.getElementById('m_i_p').value) || 0,
+      female_ind_prod: parseInt(document.getElementById('f_i_p').value) || 0,
+      male_ind_nonprod: parseInt(document.getElementById('m_i_np').value) || 0,
+      female_ind_nonprod: parseInt(document.getElementById('f_i_np').value) || 0
+    };
+    // Using update instead of upsert so we don't accidentally wipe Step 5 data
+    const { error } = await sb.from('company_profile').update(payload).eq('user_id', user.id);
+    if (!error) moveNext(); else { alert(error.message); btn.disabled = false; btn.innerText = "Save Registrations & Continue"; }
+  }
+
+  // --- DUMMY STEPS (7 TO 11) ---
+  function renderStep7Dummy(title, desc) {
+    return `
+      <div style="background: rgba(128,128,128,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-top:15px;">
+        <p style="font-size: 13px; color: var(--text-muted);">${desc}</p>
+        <button class="primary-btn" onclick="moveNext()">Confirm & Proceed</button>
+      </div>`;
+  }
+
+  function renderStep8Dummy() {
+    return `
+      <div style="background: rgba(128,128,128,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-top:15px;">
+        <div class="input-group" style="margin-bottom: 15px;"><label>Upload Business Permit (PDF/Image)</label><input type="file"></div>
+        <div class="input-group" style="margin-bottom: 20px;"><label>Upload Valid ID</label><input type="file"></div>
+        <button class="primary-btn" onclick="moveNext()">Upload Documents</button>
+      </div>`;
+  }
+
+  function renderStep9Dummy() {
+    return `
+      <div style="background: rgba(128,128,128,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-top:15px;">
+        <p style="font-size: 13px; color: var(--accent);"><i class="fas fa-clock"></i> Your application is currently under review by an administrator.</p>
+        <button class="primary-btn" onclick="moveNext()">Proceed to Next Step</button>
+      </div>`;
+  }
+
+  function renderStep10Dummy() {
+    return `
+      <div style="background: rgba(128,128,128,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-top:15px;">
+        <div class="input-group" style="margin-bottom: 20px;">
+          <label>Primary Technological Need</label>
+          <select><option>Inventory Management Software</option><option>Point of Sale (POS) System</option><option>E-Commerce Website</option></select>
+        </div>
+        <button class="primary-btn" onclick="moveNext()">Submit Assessment</button>
+      </div>`;
+  }
+
+  function renderStep11Dummy() {
+    return `
+      <div style="background: rgba(46, 204, 113, 0.1); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; margin-top:15px; text-align: center;">
+        <h3 style="color: var(--accent); margin-top: 0;"><i class="fas fa-check-circle" style="font-size: 30px; margin-bottom: 10px; display:block;"></i> Final Step Reached</h3>
+        <p style="font-size: 13px; color: var(--text-main);">Your application flow is complete. Waiting for final endorsement approval.</p>
+        <button class="primary-btn" style="margin-top:10px; width:auto;" onclick="alert('Application Flow Finished!')">Return Home</button>
+      </div>`;
+  }
+
+  // --- NAVIGATION HELPER ---
+  async function moveNext() {
+    currentStep++;
+    if(currentStep <= stepsData.length) {
+      await sb.from('user_profiles').update({ current_step: currentStep }).eq('id', user.id);
+      renderSteps();
     }
   }
 
