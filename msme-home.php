@@ -472,13 +472,13 @@ async function saveStep5() {
     const btn = document.getElementById('saveStep6Btn');
     btn.disabled = true; btn.innerText = "Saving...";
     const payload = {
-      dti_reg_num: document.getElementById('c_dti_n').value || null,
+      DTI_reg_num: document.getElementById('c_dti_n').value || null,
       dti_reg_date: document.getElementById('c_dti_d').value || null,
-      sec_reg_num: document.getElementById('c_sec_n').value || null,
+      SEC_reg_num: document.getElementById('c_sec_n').value || null,
       sec_reg_date: document.getElementById('c_sec_d').value || null,
-      cda_reg_num: document.getElementById('c_cda_n').value || null,
+      CDA_reg_num: document.getElementById('c_cda_n').value || null,
       cda_reg_date: document.getElementById('c_cda_d').value || null,
-      others_reg_num: document.getElementById('c_oth_n').value || null,
+      others: document.getElementById('c_oth_n').value || null,
       others_reg_date: document.getElementById('c_oth_d').value || null,
 
       male_dir_prod: parseInt(document.getElementById('m_d_p').value) || 0,
