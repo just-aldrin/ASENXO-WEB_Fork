@@ -206,7 +206,7 @@
 
   async function init() {
     const { data: { session } } = await sb.auth.getSession();
-    if (!session) return window.location.href = 'login.php';
+    if (!session) return window.location.href = 'login-mock.php';
     user = session.user;
 
     const { data: p } = await sb.from('user_profiles').select('*').eq('id', user.id).single();
@@ -551,7 +551,7 @@ async function saveStep5() {
   }
 
   function toggleTheme() { document.body.classList.toggle('light-theme'); }
-  function handleLogout() { sb.auth.signOut().then(() => window.location.href = 'login.php'); }
+  function handleLogout() { sb.auth.signOut().then(() => window.location.href = 'login-mock.php'); }
   window.onload = init;
 </script>
 </body>
