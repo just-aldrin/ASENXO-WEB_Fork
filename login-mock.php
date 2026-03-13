@@ -105,54 +105,43 @@ $verified = $_GET['verified'] ?? false;
                 });
             }
 
-            document.getElementById('loginForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const email = document.getElementById('email').value;
-                    const password = document.getElementById('password').value;
-                    const formMessage = document.getElementById('formMessage');
-                    const loginBtn = document.getElementById('loginBtn');
-                    
-                    loginBtn.disabled = true;
-                    loginBtn.textContent = 'Signing In...';
-                    formMessage.style.display = 'none';
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const formMsg = document.getElementById('formMessage');
 
-                    try {
-                        // 1. Authenticate user
-                        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-                            email: email,
-                            password: password
-                        });
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Checking...';
+            formMsg.style.display = 'none';
 
-                        if (authError) throw authError;
+            try {
+                const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({ email, password });
+                if (authErr) throw authErr;
 
-                        // 2. Fetch the user's role from user_profiles table
-                        const userId = authData.session.user.id;
-                        const { data: profile, error: profileError } = await supabase
-                            .from('user_profiles')
-                            .select('role')
-                            .eq('id', userId)
-                            .single();
+                // Fetch role from profile table
+                const { data: prof, error: profErr } = await supabase
+                    .from('user_profiles')
+                    .select('role')
+                    .eq('id', authData.user.id)
+                    .maybeSingle();
 
-                        if (profileError) throw profileError;
+                if (profErr || !prof) throw new Error("Profile not found.");
 
-                        // 3. Route the user to their respective dashboard
-                        if (profile.role === 'msme') {
-                            window.location.href = 'msme-home.php';
-                        } else if (profile.role === 'psto') {
-                            window.location.href = 'psto-home.php';
-                        } else {
-                            throw new Error("Invalid user role detected.");
-                        }
+                const role = prof.role.toLowerCase();
+                if (role === 'psto') window.location.href = 'psto-home.php';
+                else window.location.href = 'msme-home.php';
 
-                    } catch (err) {
-                        formMessage.className = 'form-message error';
-                        formMessage.textContent = err.message;
-                        formMessage.style.display = 'block';
-                    } finally {
-                        loginBtn.disabled = false;
-                        loginBtn.textContent = 'Sign In';
-                    }
-                });
+            } catch (err) {
+                formMsg.textContent = err.message;
+                formMsg.className = 'form-message error';
+                formMsg.style.display = 'block';
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+            }
+        });
+  
                 
             document.getElementById('googleLogin').addEventListener('click', async () => {
                 const { error } = await supabase.auth.signInWithOAuth({ 

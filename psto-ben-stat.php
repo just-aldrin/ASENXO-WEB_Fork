@@ -1,10 +1,38 @@
+<?php
+$host = 'aws-1-ap-southeast-2.pooler.supabase.com';
+$port = '5432';
+$dbname = 'postgres';
+$username = 'postgres.hmxrblblcpbikkxcwwni';
+$password = 'GgqIRwBL1ktX5xNt';
+
+try {
+    $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require";
+    $pdo = new PDO($dsn, $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $checkTable = $pdo->query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'company_profile')");
+    $tableExists = $checkTable->fetchColumn();
+    
+    if (!$tableExists) {
+        $beneficiaries = [];
+        $tableError = "Table 'company_profile' does not exist.";
+    } else {
+        $stmt = $pdo->query("SELECT user_id, enterprise_name, created_at, status FROM company_profile ORDER BY created_at DESC");
+        $beneficiaries = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+} catch (PDOException $e) {
+    $error = $e->getMessage();
+    $beneficiaries = [];
+    
+    error_log("Database error in psto-ben-stat.php: " . $error);
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Beneficiary Status | ASENXO</title>
-<!-- FAVICON -->
 <link rel="icon" type="image/png" href="ASENXO-WEB/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -12,7 +40,6 @@
 <link rel="stylesheet" href="src/css/psto-ben-stat-style.css">
 
 <style>
-    /* Intro Animations */
     @keyframes cardIntro {
         0% {
             opacity: 0;
@@ -51,7 +78,6 @@
         }
     }
     
-    /* Apply animations to elements */
     body {
         animation: bodyFade 0.9s ease-out forwards;
         background-color: var(--bg-body, #0a0a0a);
@@ -62,7 +88,7 @@
         animation: cardIntro 0.7s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
         transform-origin: center;
         will-change: transform, opacity;
-        opacity: 0; /* Start invisible */
+        opacity: 0; 
     }
     
     .stat-card:nth-child(1) { animation-delay: 0.1s; }
@@ -95,7 +121,6 @@
         opacity: 0;
     }
     
-    /* Ensure smooth theme transition */
     body, .stat-card, .table-container, .sidebar, .top-header, 
     .modal, .calendar-grid, button, input, select {
         transition: background-color 0.3s ease, 
@@ -109,9 +134,8 @@
     }
 </style>
 
-
 </head>
-<body class="dark">
+<body> 
 <div class="app">
 <header class="top-header">
 <div class="top-header-left">
@@ -126,7 +150,7 @@
 </div>
 <div class="top-header-right">
   <button class="btn-export" id="exportBtn"><i class="fas fa-download"></i> Export</button>
-  <button class="theme-toggle" id="themeToggle"><i class="fas fa-sun"></i> Light</button>
+  <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i> Dark</button> <!-- changed from Light to Dark -->
 </div>
 </header>
 
@@ -145,10 +169,8 @@
   </div>
 </aside>
 
-<!-- modals -->
 <div class="modal-overlay" id="confirmModal"><div class="modal"><h3 style="margin:0 0 6px;font-size:16px;">Confirm status change</h3><p style="margin:0 0 16px;color:var(--text-muted);">Approve <strong id="modalBusiness" style="color:var(--text-primary);"></strong> to schedule TNA visit.</p><div class="modal-actions"><button class="modal-btn" id="modalCancel">Cancel</button><button class="modal-btn confirm" id="modalConfirm">Confirm</button></div></div></div>
 
-<!-- calendar modal - FIXED: days now correct, month display accurate, past dates disabled -->
 <div class="modal-overlay calendar-modal" id="calendarModal">
   <div class="modal">
     <h3 style="display:flex; align-items:center; gap:6px; margin:0 0 6px; font-size:16px;"><i class="fas fa-calendar-alt" style="color:var(--green);"></i> Schedule visit</h3>
@@ -158,7 +180,6 @@
       <h4 id="monthYearDisplay">March 2026</h4>
       <button class="calendar-nav-btn" id="nextMonthBtn">Next <i class="fas fa-chevron-right"></i></button>
     </div>
-    <!-- calendar grid injected via js -->
     <div class="calendar-grid" id="calendarGrid"></div>
     <div class="datetime-row">
       <label>Date</label><input type="text" id="selectedDate" readonly>
@@ -182,27 +203,63 @@
   <div class="stat-card"><div class="stat-title">Pending</div><div class="stat-value" id="pendingCount">0</div><div class="stat-change" id="pendingPercent"></div></div>
   <div class="stat-card"><div class="stat-title">For Assessment</div><div class="stat-value" id="approvedCount">0</div><div class="stat-change" id="approvedPercent"></div></div>
 </div>
-<div class="table-container"><table><thead><tr><th>ID No.</th><th>Enterprise</th><th>Date Received</th><th>Status</th><th>Details</th><th>Action</th><th>Scheduled Visit</th></tr></thead><tbody id="tableBody"></tbody></table></div>
+<div class="table-container"><table><thead><tr><th>ID No.</th><th>Enterprise</th><th>Date Received</th><th>Status</th><th>Details</th><th>Action</th><th>Scheduled Visit</th></tr></thead>
+<tbody id="beneficiaryTableBody">
+    <?php if (empty($beneficiaries)): ?>
+        <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted);">No beneficiaries found.</td>
+        </tr>
+    <?php else: ?>
+        <?php foreach ($beneficiaries as $index => $row): ?>
+        <tr>
+            <td><?php echo $index + 1; ?></td>
+            <td class="business-name"><?php echo htmlspecialchars($row['enterprise_name']); ?></td>
+            <td><?php echo date('M d, Y', strtotime($row['created_at'])); ?></td>
+            <td>
+                <span class="status-pill <?php echo ($row['status'] === 'approved') ? 'approved' : 'pending'; ?>">
+                    <?php echo ($row['status'] === 'approved') ? 'FOR ASSESSMENT' : 'PENDING'; ?>
+                </span>
+            </td>
+            <td>
+                <button class="action-btn view-btn" data-user-id="<?php echo htmlspecialchars($row['user_id']); ?>" title="View Details">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </td>
+            <td>
+                <button class="action-btn approve" data-index="<?php echo $index; ?>" <?php echo ($row['status'] === 'approved') ? 'disabled' : ''; ?>>
+                    For Assessment
+                </button>
+            </td>
+            <td>—</td>
+        </tr>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</tbody>
+</table></div>
 </main>
+<?php if (isset($error)): ?>
+<script>
+console.error('Database Error: <?php echo addslashes($error); ?>');
+document.addEventListener('DOMContentLoaded', function() {
+    const tbody = document.getElementById('beneficiaryTableBody');
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #e74c3c;">Database connection error. Please check credentials.</td></tr>';
+    }
+});
+</script>
+<?php endif; ?>
 </div></div>
 
 <script>
-// ---------- beneficiary data ----------
-const beneficiaries = [
-  {name:'Han Jim Marketing Corporation',date:'2026-02-12', status:'pending', scheduled: ''},
-  {name:'4JNG Food Services', date:'2026-02-12', status:'pending', scheduled: ''},
-  {name:'RMSS Garments Maker', date:'2026-02-14', status:'pending', scheduled: ''},
-  {name:'SJL Corporation', date:'2026-02-16', status:'pending', scheduled: ''},
-  {name:'Balay Sang Amo Food Products', date:'2026-02-18', status:'pending', scheduled: ''},
-  {name:'Maravilla Enterprises Inc.', date:'2026-02-19', status:'pending', scheduled: ''},
-  {name:'JLP Multi Ventures, Inc.', date:'2026-02-21', status:'pending', scheduled: ''},
-  {name:'Belverim Foods Corporation', date:'2026-02-22', status:'pending', scheduled: ''},
-  {name:'Orchard Valley, Inc.', date:'2026-02-23', status:'pending', scheduled: ''},
-  {name:'Think About Cakes Bakery', date:'2026-02-25', status:'pending', scheduled: ''}
-];
+const beneficiaries = <?php echo json_encode($beneficiaries); ?>.map(b => ({
+    user_id: b.user_id,
+    name: b.enterprise_name,
+    date: new Date(b.created_at).toLocaleDateString(),
+    status: b.status
+}));
 
 let pendingApprovalIndex = null;
-const tbody = document.getElementById('tableBody');
+const tbody = document.getElementById('beneficiaryTableBody');
 const searchInput = document.getElementById('searchInput');
 
 function getTodayDate() { const d=new Date(); d.setHours(0,0,0,0); return d; }
@@ -249,7 +306,7 @@ function renderTable(){
     const row = document.createElement('tr');
     row.innerHTML = `<td>${String(originalIdx+1).padStart(4,'0')}</td><td>${b.name}</td><td>${b.date}</td>
       <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-      <td><button class="action-btn view-btn" data-index="${originalIdx}">View</button></td>
+      <td><button class="action-btn view-btn" data-user-id="${b.user_id}">View</button></td>
       <td><button class="action-btn approve" data-index="${originalIdx}" ${b.status==='approved'?'disabled':''}>For Assessment</button></td>
       <td>${b.scheduled||'—'}</td>`;
     tbody.appendChild(row);
@@ -257,11 +314,10 @@ function renderTable(){
   updateStats();
   document.querySelectorAll('.view-btn').forEach(button => {
     button.addEventListener('click', function() {
-        const index = this.getAttribute('data-index');
-      
-        window.location.href = `psto-view.php?index=${index}`;
+        const userId = this.getAttribute('data-user-id');
+        window.location.href = `psto-view.php?user_id=${encodeURIComponent(userId)}`;
     });
-});
+  });
   document.querySelectorAll('.approve').forEach(btn => btn.addEventListener('click',(e)=>{
     if(!e.target.disabled){ 
       pendingApprovalIndex = e.target.dataset.index;
@@ -274,24 +330,21 @@ function renderTable(){
   else badge.style.display='none';
 }
 
-// ---------- FIXED CALENDAR ----------
 let currentYear, currentMonth, selectedDay;
 
 function initCalendarToToday() {
   const today = new Date();
   currentYear = today.getFullYear();
-  currentMonth = today.getMonth();      // 0-11
+  currentMonth = today.getMonth();      
   selectedDay = today.getDate();
 }
 
 function updateCalendar() {
-  // update header
   const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   document.getElementById('monthYearDisplay').textContent = monthNames[currentMonth] + ' ' + currentYear;
   
-  const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay(); // 0 = Sunday
-  // adjust: Monday first (0 = Monday? we want Monday first: if Sunday (0) -> offset 6, else shift by 1)
-  let startOffset = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1; // now Monday=0 offset
+  const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay(); 
+  let startOffset = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1; 
   
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   
@@ -301,21 +354,18 @@ function updateCalendar() {
     <div class="calendar-day-header">TH</div><div class="calendar-day-header">FR</div><div class="calendar-day-header">SA</div><div class="calendar-day-header">SU</div>
   `;
   
-  // empty cells before first day
   for (let i = 0; i < startOffset; i++) {
     const empty = document.createElement('div');
     empty.className = 'calendar-cell empty';
     grid.appendChild(empty);
   }
   
-  // actual days
   for (let d = 1; d <= daysInMonth; d++) {
     const cell = document.createElement('div');
     cell.className = 'calendar-cell';
     cell.innerText = d;
     cell.dataset.day = d;
     
-    // disable past dates
     if (!isValidSelectedDate(currentYear, currentMonth, d)) {
       cell.classList.add('past-date');
     } else if (d === selectedDay) {
@@ -324,11 +374,9 @@ function updateCalendar() {
     
     cell.addEventListener('click', function() {
       if (this.classList.contains('past-date')) return;
-      // remove selected from others
       document.querySelectorAll('#calendarGrid .calendar-cell').forEach(c => c.classList.remove('selected'));
       this.classList.add('selected');
       selectedDay = parseInt(this.dataset.day);
-      // update input
       const monthStr = String(currentMonth + 1).padStart(2, '0');
       const dayStr = String(selectedDay).padStart(2, '0');
       document.getElementById('selectedDate').value = `${currentYear}-${monthStr}-${dayStr}`;
@@ -337,13 +385,11 @@ function updateCalendar() {
     grid.appendChild(cell);
   }
   
-  // ensure selectedDate input reflects selectedDay (if valid)
   if (selectedDay && selectedDay <= daysInMonth && isValidSelectedDate(currentYear, currentMonth, selectedDay)) {
     const monthStr = String(currentMonth + 1).padStart(2, '0');
     const dayStr = String(selectedDay).padStart(2, '0');
     document.getElementById('selectedDate').value = `${currentYear}-${monthStr}-${dayStr}`;
   } else {
-    // if selectedDay invalid, set to first valid date
     for (let d = 1; d <= daysInMonth; d++) {
       if (isValidSelectedDate(currentYear, currentMonth, d)) {
         selectedDay = d;
@@ -353,18 +399,15 @@ function updateCalendar() {
     const monthStr = String(currentMonth + 1).padStart(2, '0');
     const dayStr = String(selectedDay).padStart(2, '0');
     document.getElementById('selectedDate').value = `${currentYear}-${monthStr}-${dayStr}`;
-    // also update selected class
     document.querySelectorAll('#calendarGrid .calendar-cell').forEach(cell => {
       if (parseInt(cell.dataset.day) === selectedDay) cell.classList.add('selected');
     });
   }
 }
 
-// month navigation
 document.getElementById('prevMonthBtn').addEventListener('click', () => {
   currentMonth--;
   if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-  // adjust selectedDay if out of range or invalid
   const daysInNewMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   if (selectedDay > daysInNewMonth) selectedDay = daysInNewMonth;
   if (!isValidSelectedDate(currentYear, currentMonth, selectedDay)) {
@@ -388,12 +431,10 @@ document.getElementById('nextMonthBtn').addEventListener('click', () => {
   updateCalendar();
 });
 
-// modal 1 -> confirm opens calendar
 document.getElementById('modalConfirm').onclick = () => {
   if (pendingApprovalIndex !== null) {
     const b = beneficiaries[pendingApprovalIndex];
     document.getElementById('calendarBusiness').innerHTML = `<strong>${b.name}</strong> — select date & time`;
-    // reset calendar to today
     const today = new Date();
     currentYear = today.getFullYear();
     currentMonth = today.getMonth();
@@ -430,13 +471,9 @@ document.getElementById('calendarConfirm').onclick = () => {
   pendingApprovalIndex = null;
 };
 
-// Set dark mode as default
-document.body.classList.add('dark');
 
-// Theme toggle
 document.getElementById('themeToggle').onclick = function() {
   document.body.classList.toggle('dark');
-  const icon = document.querySelector('#themeToggle i');
   const buttonText = document.querySelector('#themeToggle');
   if (document.body.classList.contains('dark')) {
     buttonText.innerHTML = '<i class="fas fa-sun"></i> Light';
@@ -445,20 +482,17 @@ document.getElementById('themeToggle').onclick = function() {
   }
 };
 
-// export
 document.getElementById('exportBtn').onclick = () => {
   const exportData = beneficiaries.map((b,i) => ({ ID: i+1, 'Business Name': b.name, 'Date Received': b.date, Status: b.status==='approved'?'FOR ASSESSMENT':'PENDING', 'Scheduled Visit': b.scheduled||'' }));
   const ws = XLSX.utils.json_to_sheet(exportData);
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Beneficiaries'); XLSX.writeFile(wb, 'beneficiaries.xlsx');
 };
 
-// event listeners
 searchInput.addEventListener('input', renderTable);
 document.getElementById('sortSelect').addEventListener('change', (e) => { currentSort = e.target.value; renderTable(); });
 document.getElementById('statusFilterSelect').addEventListener('change', (e) => { currentStatusFilter = e.target.value; renderTable(); });
 document.getElementById('clearFilterBtn')?.addEventListener('click', () => { currentStatusFilter = 'all'; document.getElementById('statusFilterSelect').value = 'all'; renderTable(); });
 
-// initialize
 initCalendarToToday();
 renderTable();
 </script>

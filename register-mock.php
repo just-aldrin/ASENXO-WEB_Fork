@@ -77,7 +77,7 @@ session_start();
 
                     <div class="input-group">
                         <label>Referral Code (Optional)</label>
-                        <input type="text" name="referral_code" value="ADM0004">
+                        <input type="text" name="referral_code" placeholder="Enter code for Admin access">
                     </div>
 
                     <div class="agree-row">
@@ -103,15 +103,8 @@ session_start();
             <div style="color: #ccc; line-height: 1.6;">
                 <p>1. Acceptance of Terms</p>
                 <p style="font-size: 14px; margin-bottom: 15px;">By accessing and using ASENXO services, you accept and agree to be bound by these terms.</p>
-                
                 <p>2. User Accounts</p>
                 <p style="font-size: 14px; margin-bottom: 15px;">You are responsible for maintaining the confidentiality of your account credentials.</p>
-                
-                <p>3. Privacy</p>
-                <p style="font-size: 14px; margin-bottom: 15px;">Your data is handled according to our Privacy Policy.</p>
-                
-                <p>4. Verification</p>
-                <p style="font-size: 14px; margin-bottom: 15px;">You must verify your email address to activate your account.</p>
             </div>
             <button class="close-modal" id="closeModal" style="background: #e2b974; color: #000; border: none; padding: 10px 30px; border-radius: 5px; margin-top: 20px; cursor: pointer; width: 100%;">Close</button>
         </div>
@@ -122,14 +115,7 @@ session_start();
     (function() {
         const SUPABASE_URL = 'https://hmxrblblcpbikkxcwwni.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            global: {
-                headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                }
-            }
-            });;
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const form = document.getElementById('registerForm');
         const signupBtn = document.getElementById('signupBtn');
@@ -141,6 +127,7 @@ session_start();
         const modal = document.getElementById('termsModal');
         const closeBtn = document.getElementById('closeModal');
 
+        // Password Visibility Toggle
         if (toggleBtn && passwordInput && toggleIcon) {
             toggleBtn.addEventListener('click', () => {
                 const type = passwordInput.type === 'password' ? 'text' : 'password';
@@ -150,15 +137,12 @@ session_start();
             });
         }
 
-        if (termsLink) {
-            termsLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                modal.style.display = 'flex';
-            });
-        }
+        // Modal Logic
+        if (termsLink) termsLink.addEventListener('click', (e) => { e.preventDefault(); modal.style.display = 'flex'; });
         if (closeBtn) closeBtn.addEventListener('click', () => modal.style.display = 'none');
         window.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
 
+        // Password Validation UI
         const password = document.getElementById("password");
         const checklist = document.getElementById("passwordChecklist");
         if (password && checklist) {
@@ -175,11 +159,7 @@ session_start();
 
             password.addEventListener("input", () => {
                 const val = password.value;
-                if (val.length > 0 && checklist.style.display === 'none') {
-                    checklist.style.display = 'block';
-                } else if (val.length === 0 && checklist.style.display !== 'none') {
-                    checklist.style.display = 'none';
-                }
+                checklist.style.display = val.length > 0 ? 'block' : 'none';
                 toggle(checkUpper, /[A-Z]/.test(val));
                 toggle(checkLower, /[a-z]/.test(val));
                 toggle(checkNumber, /[0-9]/.test(val));
@@ -191,119 +171,128 @@ session_start();
         function showMessage(text, type = 'success') {
             formMessage.className = `form-message ${type}`;
             formMessage.innerHTML = text;
+            formMessage.style.display = 'block';
         }
 
-        function generateOtp() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
-        }
-
-   form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-    }
-
-    const email = document.querySelector('input[name="email"]').value;
-    const password = document.querySelector('input[name="password"]').value;
-    const firstName = document.querySelector('input[name="first_name"]').value;
-    const lastName = document.querySelector('input[name="last_name"]').value;
-    const referralCode = document.querySelector('input[name="referral_code"]').value.trim(); // Trim spaces
-
-    signupBtn.disabled = true;
-    signupBtn.textContent = 'Creating account...';
-
-    try {
-        let assignedRole = 'msme'; // Default to MSME
-
-        // 1. VALIDATE REFERRAL CODE (If provided)
-        if (referralCode !== '') {
-            // Check the database for the code
-            const { data: codeData, error: codeError } = await supabase
-                .from('referral_codes')
-                .select('role, is_active')
-                .eq('code', referralCode)
-                .single();
-
-            // If code doesn't exist or isn't active, block registration
-            if (codeError || !codeData || !codeData.is_active) {
-                throw new Error('Invalid or expired referral code. Leave blank if you are registering as an MSME.');
+        // MAIN REGISTRATION LOGIC
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
             }
 
-            // Assign the role attached to that specific code
-            assignedRole = codeData.role; 
-        }
+            const email = document.querySelector('input[name="email"]').value;
+            const password = document.querySelector('input[name="password"]').value;
+            const firstName = document.querySelector('input[name="first_name"]').value;
+            const lastName = document.querySelector('input[name="last_name"]').value;
+            const referralCode = document.querySelector('input[name="referral_code"]').value.trim();
 
-        // 2. SIGN UP THE USER
-        const { data, error: authError } = await supabase.auth.signUp({
-            email,
-            password,
-            options: { 
-                data: { 
-                    first_name: firstName, 
-                    last_name: lastName, 
-                    role: assignedRole // Store the assigned role in user_metadata
+            signupBtn.disabled = true;
+            signupBtn.textContent = 'Creating account...';
+            formMessage.style.display = 'none';
+
+            try {
+                let assignedRole = 'msme'; // Default role
+
+                // 1. VALIDATE REFERRAL CODE (If provided)
+                if (referralCode !== '') {
+                    const { data: codeData, error: codeError } = await supabase
+                        .from('referral_codes')
+                        .select('role')
+                        .eq('code', referralCode)
+                        .maybeSingle();
+
+                    if (codeError) throw new Error("Error checking referral code.");
+                    
+                    if (codeData && codeData.role) {
+                        assignedRole = codeData.role;
+                        console.log("Referral code valid. Role assigned:", assignedRole);
+                    } else {
+                        throw new Error("Invalid referral code. Leave blank for MSME registration.");
+                    }
                 }
+
+                // 2. SIGN UP THE USER (AUTHENTICATION)
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { 
+                        data: { 
+                            first_name: firstName, 
+                            last_name: lastName, 
+                            role: assignedRole 
+                        }
+                    }
+                });
+
+                if (authError) throw authError;
+
+                // 3. INSERT USER PROFILE (DATABASE)
+if (authData.user) {
+    const { error: profileError } = await supabase
+        .from('user_profiles')
+        .upsert([ // Changed from .insert to .upsert to avoid 409 Conflict
+            { 
+                id: authData.user.id, 
+                first_name: firstName, 
+                last_name: lastName, 
+                email: email,
+                role: assignedRole 
+            }
+        ], { onConflict: 'id' }); // Explicitly tell it to check the 'id' column
+
+    if (profileError) {
+        console.error("Profile Upsert Error:", profileError);
+        // We don't necessarily want to stop the whole process if the profile 
+        // already exists, but we should log it.
+    }
+}
+
+                // 4. OTP GENERATION & DB LOGGING
+                const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+                const expiresAt = new Date(Date.now() + 10 * 60000).toISOString();
+
+                const { error: dbError } = await supabase
+                    .from('email_verifications')
+                    .upsert({ 
+                        email: email, 
+                        otp: generatedOtp, 
+                        expires_at: expiresAt,
+                        attempts: 0 
+                    }, { onConflict: 'email' });
+
+                if (dbError) throw dbError;
+
+                // 5. SEND OTP VIA PHP MAIL
+                try {
+                    await fetch('send-otp.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            email: email, 
+                            otp: generatedOtp,
+                            firstName: firstName
+                        })
+                    });
+                } catch (emailErr) {
+                    console.warn('Email fetch failed, but record is in DB.');
+                }
+
+                showMessage('✅ Account Created! Please check your Email for the OTP.', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'verification.php?email=' + encodeURIComponent(email);
+                }, 2000);
+
+            } catch (err) {
+                console.error('Registration error:', err);
+                showMessage(err.message || 'Error creating account', 'error');
+                signupBtn.disabled = false;
+                signupBtn.textContent = 'Sign Up';
             }
         });
-
-        if (authError) throw authError;
-
-        // 3. (Optional but Recommended) Insert user profile to a user_profiles table 
-        // If you rely on user_profiles for your login routing:
-        if (data.user) {
-            await supabase.from('user_profiles').insert({
-                id: data.user.id,
-                first_name: firstName,
-                last_name: lastName,
-                role: assignedRole,
-                email: email
-            });
-        }
-
-        // 4. OTP GENERATION (Your existing logic)
-        const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = new Date(Date.now() + 10 * 60000).toISOString();
-
-        const { error: dbError } = await supabase
-            .from('email_verifications')
-            .upsert({ 
-                email: email, 
-                otp: generatedOtp, 
-                expires_at: expiresAt,
-                attempts: 0 
-            }, { onConflict: 'email' });
-
-        if (dbError) throw dbError;
-
-        try {
-            await fetch('send-otp.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    email: email, 
-                    otp: generatedOtp,
-                    firstName: firstName
-                })
-            });
-        } catch (emailErr) {
-            console.warn('Email fetch failed, but code is in DB.');
-        }
-
-        showMessage('✅ Account Created! Please check your Email for the OTP.', 'success');
-        
-        setTimeout(() => {
-            window.location.href = 'verification.php?email=' + encodeURIComponent(email);
-        }, 2000);
-
-    } catch (err) {
-        console.error('Registration error:', err);
-        showMessage(err.message || 'Error creating account', 'error');
-        signupBtn.disabled = false;
-        signupBtn.textContent = 'Sign Up';
-    }
-});
     })();
     </script>
 </body>

@@ -109,9 +109,8 @@
     }
 </style>
 
-
 </head>
-<body class="dark">
+<body> 
 <div class="app">
 <header class="top-header">
 <div class="top-header-left">
@@ -126,7 +125,7 @@
 </div>
 <div class="top-header-right">
   <button class="btn-export" id="exportBtn"><i class="fas fa-download"></i> Export</button>
-  <button class="theme-toggle" id="themeToggle"><i class="fas fa-sun"></i> Light</button>
+  <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i> Dark</button> <!-- changed from Light -->
 </div>
 </header>
 
@@ -145,10 +144,8 @@
   </div>
 </aside>
 
-<!-- modals -->
 <div class="modal-overlay" id="confirmModal"><div class="modal"><h3 style="margin:0 0 6px;font-size:16px;">Confirm status change</h3><p style="margin:0 0 16px;color:var(--text-muted);">Approve <strong id="modalBusiness" style="color:var(--text-primary);"></strong> to schedule TNA visit.</p><div class="modal-actions"><button class="modal-btn" id="modalCancel">Cancel</button><button class="modal-btn confirm" id="modalConfirm">Confirm</button></div></div></div>
 
-<!-- calendar modal - FIXED: days now correct, month display accurate, past dates disabled -->
 <div class="modal-overlay calendar-modal" id="calendarModal">
   <div class="modal">
     <h3 style="display:flex; align-items:center; gap:6px; margin:0 0 6px; font-size:16px;"><i class="fas fa-calendar-alt" style="color:var(--green);"></i> Schedule visit</h3>
@@ -158,7 +155,6 @@
       <h4 id="monthYearDisplay">March 2026</h4>
       <button class="calendar-nav-btn" id="nextMonthBtn">Next <i class="fas fa-chevron-right"></i></button>
     </div>
-    <!-- calendar grid injected via js -->
     <div class="calendar-grid" id="calendarGrid"></div>
     <div class="datetime-row">
       <label>Date</label><input type="text" id="selectedDate" readonly>
@@ -188,27 +184,27 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// 1. Initialize Supabase (Using the keys from your msme-home file)
 const S_URL = 'https://hmxrblblcpbikkxcwwni.supabase.co';
-const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw'; // Replace with the actual long string from msme-home.php
+const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhteHJibGJsY3BiaWtreGN3d25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyODY0MDksImV4cCI6MjA4Nzg2MjQwOX0.qC4Lm2KbToc0f1syHpMWJmQqRhQTosNfFzBrfTXSWDw'; 
 const sb = supabase.createClient(S_URL, S_KEY);
 
-// 2. Protect the PSTO Dashboard
 async function verifyPstoAccess() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return window.location.href = 'login-mock.php';
 
     const userId = session.user.id;
-    const { data: p, error } = await sb.from('user_profiles').select('role').eq('id', userId).single();
+    const { data: p, error } = await sb.from('user_profiles').select('role').eq('id', userId).maybeSingle();
 
-    // ROLE SECURITY CHECK: Redirect non-PSTO users
-    if (error || !p || p.role !== 'psto') {
-        alert("Unauthorized access. You are not a PSTO admin.");
-        return window.location.href = p?.role === 'msme' ? 'msme-home.php' : 'login-mock.php';
+    const userRole = p?.role ? p.role.toLowerCase() : '';
+
+    if (error || !p || userRole !== 'psto') {
+        alert("Unauthorized access. Your role is: " + p?.role);
+        return window.location.href = (userRole === 'msme') ? 'msme-home.php' : 'login-mock.php';
     }
-}
+    
+    console.log("Access Granted to PSTO Dashboard");
+} 
 
-// 3. Execute the check immediately on load
 verifyPstoAccess();
 
 // ---------- beneficiary data ----------
@@ -282,10 +278,9 @@ function renderTable(){
   document.querySelectorAll('.view-btn').forEach(button => {
     button.addEventListener('click', function() {
         const index = this.getAttribute('data-index');
-      
         window.location.href = `psto-view.php?index=${index}`;
     });
-});
+  });
   document.querySelectorAll('.approve').forEach(btn => btn.addEventListener('click',(e)=>{
     if(!e.target.disabled){ 
       pendingApprovalIndex = e.target.dataset.index;
@@ -304,12 +299,11 @@ let currentYear, currentMonth, selectedDay;
 function initCalendarToToday() {
   const today = new Date();
   currentYear = today.getFullYear();
-  currentMonth = today.getMonth();      // 0-11
+  currentMonth = today.getMonth();      
   selectedDay = today.getDate();
 }
 
-function updateCalendar() {
-  // update header
+  function updateCal(){
   const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   document.getElementById('monthYearDisplay').textContent = monthNames[currentMonth] + ' ' + currentYear;
   
@@ -454,13 +448,8 @@ document.getElementById('calendarConfirm').onclick = () => {
   pendingApprovalIndex = null;
 };
 
-// Set dark mode as default
-document.body.classList.add('dark');
-
-// Theme toggle
 document.getElementById('themeToggle').onclick = function() {
   document.body.classList.toggle('dark');
-  const icon = document.querySelector('#themeToggle i');
   const buttonText = document.querySelector('#themeToggle');
   if (document.body.classList.contains('dark')) {
     buttonText.innerHTML = '<i class="fas fa-sun"></i> Light';
@@ -469,20 +458,17 @@ document.getElementById('themeToggle').onclick = function() {
   }
 };
 
-// export
 document.getElementById('exportBtn').onclick = () => {
   const exportData = beneficiaries.map((b,i) => ({ ID: i+1, 'Business Name': b.name, 'Date Received': b.date, Status: b.status==='approved'?'FOR ASSESSMENT':'PENDING', 'Scheduled Visit': b.scheduled||'' }));
   const ws = XLSX.utils.json_to_sheet(exportData);
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Beneficiaries'); XLSX.writeFile(wb, 'beneficiaries.xlsx');
 };
 
-// event listeners
 searchInput.addEventListener('input', renderTable);
 document.getElementById('sortSelect').addEventListener('change', (e) => { currentSort = e.target.value; renderTable(); });
 document.getElementById('statusFilterSelect').addEventListener('change', (e) => { currentStatusFilter = e.target.value; renderTable(); });
 document.getElementById('clearFilterBtn')?.addEventListener('click', () => { currentStatusFilter = 'all'; document.getElementById('statusFilterSelect').value = 'all'; renderTable(); });
 
-// initialize
 initCalendarToToday();
 renderTable();
 </script>

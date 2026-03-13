@@ -441,7 +441,7 @@
     }
   </style>
 </head>
-<body class="dark">
+<body> <!-- removed class="dark" -->
 <div class="app">
   <!-- header - matching psto-ben-stat.php exactly -->
   <header class="top-header">
@@ -455,7 +455,7 @@
     </div>
     <div class="top-header-right">
       <button class="btn-export" id="exportBtn"><i class="fas fa-download"></i> Export</button>
-      <button class="theme-toggle" id="themeToggle"><i class="fas fa-sun"></i> Light</button>
+      <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i> Dark</button> <!-- changed from Light -->
     </div>
   </header>
 
